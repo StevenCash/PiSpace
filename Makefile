@@ -9,8 +9,8 @@ LIBDIR=\
 LIBRARIES=\
 -lSDL2 \
 -lbcm_host \
--lGLESv2
-
+-lGLESv2 \
+-lcwiid
 
 
 CXX=g++

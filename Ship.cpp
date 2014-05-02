@@ -24,8 +24,8 @@ Ship::Ship()
     //TBD try/catch
     //Load and compile the shaders
     ShaderList_T shaderList;
-    shaderList.push_back(createShaderFromFile(GL_VERTEX_SHADER, "square3Vertex.glsl"));
-    shaderList.push_back(createShaderFromFile(GL_FRAGMENT_SHADER, "square3Fragment.glsl"));
+    shaderList.push_back(createShaderFromFile(GL_VERTEX_SHADER, "ShipVertex.glsl"));
+    shaderList.push_back(createShaderFromFile(GL_FRAGMENT_SHADER, "ShipFragment.glsl"));
 
     m_shaderProgram = createShaderProgram(shaderList);
     
