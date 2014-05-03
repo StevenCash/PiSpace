@@ -7,18 +7,20 @@
 #include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
 
 Ship::Ship():
-    m_angle(0.0f)
+    m_angle(0.0f),
+    m_yOffset(0.0f),
+    m_xOffset(0.0f)
 {
     TempStruct shipVertices[] =
         {
             {{ 0.0f, 0.3f, 0.0f,1.0f}, //0
-             {0.0, 1.0, 0.0, 1.0}},
+             {1.0, 0.0, 0.0, 1.0}},
             {{-0.3f, -0.1f, 0.0f,1.0f}, //1
              {0.0, 1.0, 0.0, 1.0}},
             {{0.0f, 0.0f, 0.0f,1.0f}, //2
              {0.0, 1.0, 0.0, 1.0}},
             {{0.3f, -0.1f, 0.0f,1.0f}, //3
-             {0.0, 1.0, 0.0, 1.0}}
+             {0.0, 0.0, 1.0, 1.0}}
         };
   
 
@@ -76,10 +78,10 @@ void Ship::Draw()
      GLuint rotation = glGetUniformLocation(m_shaderProgram,"rotation");
      glm::mat4 modelMatrix(1.0f);
      
-//TBD:move     modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.5f,0.0f,0.0f)); 
      //Rotate
-     modelMatrix = glm::rotate(modelMatrix, m_angle,glm::vec3(0.0f,0.0f,-1.0f));       
      modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2));
+     modelMatrix = glm::rotate(modelMatrix, m_angle,glm::vec3(0.0f,0.0f,-1.0f));       
+//    modelMatrix = glm::translate(modelMatrix, glm::vec3(m_xOffset, m_yOffset, 0.0f)); 
      glUniformMatrix4fv(rotation, 1, GL_FALSE, glm::value_ptr(modelMatrix));
     //get a handle to the vPosition attribute of the shader
     //this can/should be done right after linking the shader and
@@ -131,4 +133,14 @@ void Ship::rotateLeft()
     m_angle-=10.0f;
     if(m_angle < 0)
         m_angle+=360;
+}
+
+void Ship::translateUp()
+{
+    m_yOffset += 0.1f;
+}
+
+void Ship::translateDown()
+{
+    m_yOffset -= 0.1f;
 }

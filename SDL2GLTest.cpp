@@ -12,7 +12,6 @@
 
 //function prototype
 void setupDisplay(int screenx=1920, int screeny=1080, int flags=0);
-void printButton(Sint32 buttons);
 
 /* Wiimote Callback */
 cwiid_mesg_callback_t cwiid_callback;
@@ -131,7 +130,7 @@ int main(int argc, char *argv[])
         exit(2);
     }
     std::cout << "Commanding reporting BTN" << std::endl;
-    cwiid_command(wiimote, CWIID_CMD_RPT_MODE, CWIID_RPT_BTN);
+    cwiid_command(wiimote, CWIID_CMD_RPT_MODE, CWIID_RPT_ACC| CWIID_RPT_BTN);
     
 
     bool bQuit = false;
@@ -153,18 +152,23 @@ int main(int argc, char *argv[])
                 if(event.user.code & CWIID_BTN_UP)
                 {
                     ship.rotateLeft();
-                    std::cout << "Rotate left" << std::endl;
                 }
                 if(event.user.code & CWIID_BTN_DOWN)
                 {
                     ship.rotateRight();
-                    std::cout << "Rotate right" << std::endl;
+                }
+                if(event.user.code & CWIID_BTN_UP)
+                {
+                    ship.translateUp();
+                }
+                if(event.user.code & CWIID_BTN_DOWN)
+                {
+                    ship.translateDown();
                 }
                 if(event.user.code & CWIID_BTN_HOME)
                 {
                     bQuit = true;
                 }
-//                printButton(event.user.code);
                 break;
             }                    
             default:
@@ -256,6 +260,12 @@ void cwiid_callback(
             SDL_PushEvent(&event);
             break;
         }
+        case CWIID_MESG_ACC:
+        {
+            //Y Axis is good for holding the remote sideways and rotating
+            std::cout << (int) mesg_array[i].acc_mesg.acc[CWIID_Y] << std::endl;
+            break;
+        }
         default:
             //do nothing
             break;
@@ -263,51 +273,3 @@ void cwiid_callback(
     }
 }
 
-void printButton(Sint32 buttons)
-{
-    if(buttons & CWIID_BTN_2)
-    {
-        std::cout << "Button 2 " ;
-    }
-    if(buttons & CWIID_BTN_1)
-    {
-        std::cout << "Button 1 " ;
-    }
-    if(buttons & CWIID_BTN_B)
-    {
-        std::cout << "Button B " ;
-    }
-    if(buttons & CWIID_BTN_A)
-    {
-        std::cout << "Button A " ;
-    }
-    if(buttons & CWIID_BTN_MINUS)
-    {
-        std::cout << "Button - " ;
-    }
-    if(buttons & CWIID_BTN_PLUS)
-    {
-        std::cout << "Button + " ;
-    }
-    if(buttons & CWIID_BTN_HOME)
-    {
-        std::cout << "Button H " ;
-    }
-    if(buttons & CWIID_BTN_UP)
-    {
-        std::cout << "Button UP "  ;
-    }
-    if(buttons & CWIID_BTN_DOWN)
-    {
-        std::cout << "Button DOWN ";
-    }
-    if(buttons & CWIID_BTN_LEFT)
-    {
-        std::cout << "Button LEFT " ;
-    }
-    if(buttons & CWIID_BTN_RIGHT)
-    {
-        std::cout << "Button RIGHT " ;
-    }
-    std::cout << std::endl;
-}    

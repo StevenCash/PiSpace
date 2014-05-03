@@ -20,6 +20,8 @@ public:
     void Draw();
     void rotateRight();
     void rotateLeft();
+    void translateUp();
+    void translateDown();
 private:
     //only using 1 vertex buffer for this object
     GLuint m_vertexBufferHandleArray[1];    
@@ -29,6 +31,8 @@ private:
     GLuint m_indexBuffer;
     GLuint m_numIndices;
     GLfloat m_angle;
+    GLfloat m_yOffset;
+    GLfloat m_xOffset;
 };
 
 #endif //SHIP_H
