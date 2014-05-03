@@ -6,7 +6,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
 
-Ship::Ship()
+Ship::Ship():
+    m_angle(0.0f)
 {
     TempStruct shipVertices[] =
         {
@@ -75,8 +76,10 @@ void Ship::Draw()
      GLuint rotation = glGetUniformLocation(m_shaderProgram,"rotation");
      glm::mat4 modelMatrix(1.0f);
      
-     modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.5f,0.0f,0.0f)); 
-     modelMatrix = glm::rotate(modelMatrix, -90.0f,glm::vec3(0.0f,0.0f,1.0f));       modelMatrix = glm::scale(modelMatrix, glm::vec3(0.5));
+//TBD:move     modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.5f,0.0f,0.0f)); 
+     //Rotate
+     modelMatrix = glm::rotate(modelMatrix, m_angle,glm::vec3(0.0f,0.0f,-1.0f));       
+     modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2));
      glUniformMatrix4fv(rotation, 1, GL_FALSE, glm::value_ptr(modelMatrix));
     //get a handle to the vPosition attribute of the shader
     //this can/should be done right after linking the shader and
@@ -114,4 +117,18 @@ void Ship::Draw()
 //Destructor
 Ship::~Ship()
 {
+}
+
+void Ship::rotateRight()
+{
+    m_angle+=10.0f;
+    if(m_angle > 360.0f)
+        m_angle-=360.0f;
+}
+
+void Ship::rotateLeft()
+{
+    m_angle-=10.0f;
+    if(m_angle < 0)
+        m_angle+=360;
 }

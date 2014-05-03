@@ -12,6 +12,7 @@
 
 //function prototype
 void setupDisplay(int screenx=1920, int screeny=1080, int flags=0);
+void printButton(Sint32 buttons);
 
 /* Wiimote Callback */
 cwiid_mesg_callback_t cwiid_callback;
@@ -142,34 +143,47 @@ int main(int argc, char *argv[])
     {
         if(SDL_PollEvent(&event))
         {          
-            if(event.type == wiiButtonEvent)
+            switch(event.type)
             {
-                std::cout << "Button pushed." << std::endl;
-            }
-            else
+            case SDL_QUIT:
+                bQuit=true;
+                break;
+            case SDL_USEREVENT:
             {
-                switch(event.type)
+                if(event.user.code & CWIID_BTN_UP)
                 {
-                case SDL_QUIT:
-                    bQuit=true;
-                    break;
-                default:
-                    break;
+                    ship.rotateLeft();
+                    std::cout << "Rotate left" << std::endl;
                 }
+                if(event.user.code & CWIID_BTN_DOWN)
+                {
+                    ship.rotateRight();
+                    std::cout << "Rotate right" << std::endl;
+                }
+                if(event.user.code & CWIID_BTN_HOME)
+                {
+                    bQuit = true;
+                }
+//                printButton(event.user.code);
+                break;
+            }                    
+            default:
+                break;
             }
         }
-
-        SDL_Delay(100);
-        // SDL_Event dummy;
-        // dummy.type = SDL_KEYDOWN;
-        // dummy.key.keysym.sym = SDLK_LEFT;
-        // SDL_PushEvent(&dummy);
-
-        if((SDL_GetTicks() - timestamp) > 30000)
-        {
-            bQuit = true;
-        }
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        ship.Draw();
+        SDL_GL_SwapWindow(pWindow);
+        SDL_Delay(10);
+        
     }
+    
+    
+    if((SDL_GetTicks() - timestamp) > 30000)
+    {
+        bQuit = true;
+    }
+
 
 
 
@@ -227,23 +241,73 @@ void cwiid_callback(
     union cwiid_mesg mesg_array[], 
     struct timespec *timestamp)
 {
-    std::cout << "Message received" << std::endl;
     for (int i=0; i < mesg_count; ++i) 
     {
         switch (mesg_array[i].type) 
         {
 	case CWIID_MESG_BTN:
+        {
             //create a new SDL event with the button state
-//            cwiid_btn(&mesg_array[i].btn_mesg);
-            std::cout << "Button pressed" << std::endl;
             SDL_Event event;
             SDL_zero(event);
-            event.type = wiiButtonEvent;
+            event.type = SDL_USEREVENT; 
+            event.user.type = wiiButtonEvent;
+            event.user.code = mesg_array[i].btn_mesg.buttons;
             SDL_PushEvent(&event);
             break;
+        }
         default:
             //do nothing
             break;
         }
     }
 }
+
+void printButton(Sint32 buttons)
+{
+    if(buttons & CWIID_BTN_2)
+    {
+        std::cout << "Button 2 " ;
+    }
+    if(buttons & CWIID_BTN_1)
+    {
+        std::cout << "Button 1 " ;
+    }
+    if(buttons & CWIID_BTN_B)
+    {
+        std::cout << "Button B " ;
+    }
+    if(buttons & CWIID_BTN_A)
+    {
+        std::cout << "Button A " ;
+    }
+    if(buttons & CWIID_BTN_MINUS)
+    {
+        std::cout << "Button - " ;
+    }
+    if(buttons & CWIID_BTN_PLUS)
+    {
+        std::cout << "Button + " ;
+    }
+    if(buttons & CWIID_BTN_HOME)
+    {
+        std::cout << "Button H " ;
+    }
+    if(buttons & CWIID_BTN_UP)
+    {
+        std::cout << "Button UP "  ;
+    }
+    if(buttons & CWIID_BTN_DOWN)
+    {
+        std::cout << "Button DOWN ";
+    }
+    if(buttons & CWIID_BTN_LEFT)
+    {
+        std::cout << "Button LEFT " ;
+    }
+    if(buttons & CWIID_BTN_RIGHT)
+    {
+        std::cout << "Button RIGHT " ;
+    }
+    std::cout << std::endl;
+}    
