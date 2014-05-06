@@ -10,7 +10,8 @@ LIBRARIES=\
 -lSDL2 \
 -lbcm_host \
 -lGLESv2 \
--lcwiid
+-lcwiid \
+-lBox2D
 
 
 CXX=g++

@@ -6,11 +6,25 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
 
-Ship::Ship():
+Ship::Ship(b2World& world):
     m_angle(0.0f),
     m_yOffset(0.0f),
-    m_xOffset(0.0f)
+    m_xOffset(0.0f),
+    m_forward(0.0,-1.0f),
+    m_worldRef(world)
+
 {
+
+    //Set up the object for Box2D
+    m_bodyDef.type = b2_dynamicBody;
+    m_bodyDef.position.Set(5.0f,5.0f); //trying to start at the center
+    m_pBody = m_worldRef.CreateBody(&m_bodyDef);
+    b2PolygonShape shipShape;
+
+    //define array of vertices for the ship shape
+    b2Vec2 boxShipVertices[4];
+
+    //Vertices definitions for use by both OpenGL and Box2D
     TempStruct shipVertices[] =
         {
             {{ 0.0f, 0.3f, 0.0f,1.0f}, //0
@@ -20,9 +34,23 @@ Ship::Ship():
             {{0.0f, 0.0f, 0.0f,1.0f}, //2
              {0.0, 1.0, 0.0, 1.0}},
             {{0.3f, -0.1f, 0.0f,1.0f}, //3
-             {0.0, 0.0, 1.0, 1.0}}
+             {0.0, 1.0, 0.0, 1.0}}
         };
-  
+
+    for(int index=0; index < 4; ++index)
+    {
+        boxShipVertices[index].x = GL2BOX(shipVertices[index].vertices[0]);
+        boxShipVertices[index].y = GL2BOX(shipVertices[index].vertices[1]);
+    }
+
+    shipShape.Set(boxShipVertices, 4);
+
+    b2FixtureDef fixtureDef;
+    fixtureDef.shape = &shipShape;
+    fixtureDef.density = 1.0f;
+    fixtureDef.friction = 0.3f;
+    m_pBody->CreateFixture(&fixtureDef);
+
 
     //TBD try/catch
     //Load and compile the shaders
@@ -79,8 +107,8 @@ void Ship::Draw()
      glm::mat4 modelMatrix(1.0f);
      
      //Rotate
-     modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2));
-     modelMatrix = glm::rotate(modelMatrix, m_angle,glm::vec3(0.0f,0.0f,-1.0f));       
+//     modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2));
+     modelMatrix = glm::rotate(modelMatrix, (float)RAD2DEG(m_pBody->GetAngle()),glm::vec3(0.0f,0.0f,-1.0f));       
 //    modelMatrix = glm::translate(modelMatrix, glm::vec3(m_xOffset, m_yOffset, 0.0f)); 
      glUniformMatrix4fv(rotation, 1, GL_FALSE, glm::value_ptr(modelMatrix));
     //get a handle to the vPosition attribute of the shader
@@ -123,16 +151,14 @@ Ship::~Ship()
 
 void Ship::rotateRight()
 {
-    m_angle+=10.0f;
-    if(m_angle > 360.0f)
-        m_angle-=360.0f;
+    m_pBody->SetAngularVelocity(1.0f);
+    std::cout << "AV = " << m_pBody->GetAngularVelocity() << std::endl;
 }
 
 void Ship::rotateLeft()
 {
-    m_angle-=10.0f;
-    if(m_angle < 0)
-        m_angle+=360;
+    m_pBody->SetAngularVelocity(-1.0f);
+    std::cout << "AV = " << m_pBody->GetAngularVelocity() << std::endl;
 }
 
 void Ship::translateUp()

@@ -1,14 +1,21 @@
-
+//SDL (2)
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengles2.h> 
 
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "Ship.h"
 
+//Wii stuff
 #include <bluetooth/bluetooth.h>
 #include <cwiid.h>
+
+//Box 2D
+#include <Box2D/Box2D.h>
+#include "Ship.h"
+
+#include "Ship.h"
+
 
 //function prototype
 void setupDisplay(int screenx=1920, int screeny=1080, int flags=0);
@@ -23,12 +30,17 @@ bdaddr_t bdaddr;
 
 //new event for SDL
 Uint32 wiiButtonEvent;
+Uint32 wiiAccelEvent;
 
 //setup a constant for the equivalent of BD_ADDR_ANY
 //because the one in bluetooth.h is stupid
 const bdaddr_t kBdAddrAny = {{0, 0, 0, 0, 0, 0}};
 
 cwiid_wiimote_t *wiimote = NULL;
+
+
+//World for use with Box2D with no gravity
+b2World World(b2Vec2(0.0f,0.0f));
 
 
 int main(int argc, char *argv[])
@@ -108,7 +120,7 @@ int main(int argc, char *argv[])
     setupDisplay();
 
     wiiButtonEvent = SDL_RegisterEvents(1);
-    
+    wiiAccelEvent = SDL_RegisterEvents(1);
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -119,7 +131,7 @@ int main(int argc, char *argv[])
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     //initial display
-    Ship ship;
+    Ship ship(World);
     ship.Draw();
     SDL_GL_SwapWindow(pWindow);
 
@@ -132,6 +144,10 @@ int main(int argc, char *argv[])
     std::cout << "Commanding reporting BTN" << std::endl;
     cwiid_command(wiimote, CWIID_CMD_RPT_MODE, CWIID_RPT_ACC| CWIID_RPT_BTN);
     
+    //Box timing stuff
+    float32 timeStep = 1.0f / 60.0f;
+    int32 velocityIterations = 6;
+    int32 positionIterations = 2;
 
     bool bQuit = false;
     SDL_Event event;
@@ -149,25 +165,39 @@ int main(int argc, char *argv[])
                 break;
             case SDL_USEREVENT:
             {
-                if(event.user.code & CWIID_BTN_UP)
+                if(event.user.type == wiiButtonEvent)
                 {
-                    ship.rotateLeft();
+                    if(event.user.code & CWIID_BTN_UP)
+                    {
+                        ship.rotateLeft();
+                    }
+                    if(event.user.code & CWIID_BTN_DOWN)
+                    {
+                        ship.rotateRight();
+                    }
+                    if(event.user.code & CWIID_BTN_UP)
+                    {
+                        ship.translateUp();
+                    }
+                    if(event.user.code & CWIID_BTN_DOWN)
+                    {
+                        ship.translateDown();
+                    }
+                    if(event.user.code & CWIID_BTN_HOME)
+                    {
+                        bQuit = true;
+                    }
                 }
-                if(event.user.code & CWIID_BTN_DOWN)
+                else if(event.user.type == wiiAccelEvent)
                 {
-                    ship.rotateRight();
-                }
-                if(event.user.code & CWIID_BTN_UP)
-                {
-                    ship.translateUp();
-                }
-                if(event.user.code & CWIID_BTN_DOWN)
-                {
-                    ship.translateDown();
-                }
-                if(event.user.code & CWIID_BTN_HOME)
-                {
-                    bQuit = true;
+                    if(event.user.code > 140)
+                    {
+                        ship.rotateRight();
+                    }
+                    else if (event.user.code < 120)
+                    {
+                        ship.rotateLeft();
+                    }
                 }
                 break;
             }                    
@@ -175,10 +205,11 @@ int main(int argc, char *argv[])
                 break;
             }
         }
+        World.Step(timeStep, velocityIterations, positionIterations);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         ship.Draw();
         SDL_GL_SwapWindow(pWindow);
-        SDL_Delay(10);
+        SDL_Delay(100);
         
     }
     
@@ -262,8 +293,22 @@ void cwiid_callback(
         }
         case CWIID_MESG_ACC:
         {
+#ifdef WII_ACC
             //Y Axis is good for holding the remote sideways and rotating
             std::cout << (int) mesg_array[i].acc_mesg.acc[CWIID_Y] << std::endl;
+            //Seems to rang from 105 to about 155 (as int)
+
+            //only add event if there isn't currently an accel event on the
+            //queue
+            
+            std::cout << (int) mesg_array[i].acc_mesg.acc[CWIID_Y] << std::endl;
+            SDL_Event event;
+            SDL_zero(event);
+            event.type = SDL_USEREVENT; 
+            event.user.type = wiiAccelEvent;
+            event.user.code = mesg_array[i].acc_mesg.acc[CWIID_Y];
+            SDL_PushEvent(&event);
+#endif
             break;
         }
         default:
