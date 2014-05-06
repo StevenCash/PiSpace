@@ -19,6 +19,7 @@
 
 //function prototype
 void setupDisplay(int screenx=1920, int screeny=1080, int flags=0);
+void setupWiiMote();
 
 /* Wiimote Callback */
 cwiid_mesg_callback_t cwiid_callback;
@@ -53,59 +54,6 @@ int main(int argc, char *argv[])
 //    }
 
 
-    std::cout << "Put wiimote into discovery mode (press 1+2)" << std::endl;
-    wiimote = cwiid_open(&bdaddr, CWIID_FLAG_MESG_IFC);
-    if(wiimote == NULL)
-    {
-        std::cerr << "No connection. Quitting" << std::endl;
-        exit(1);
-    }
-    else
-    {
-        std::cout << "Connected" << std::endl;
-    }
-
-
-
-
-/*
-    int messageCount = 0;
-    cwiid_mesg *mesg[100];
-    timespec timeinfo;
-
-    if(cwiid_get_mesg(wiimote, &messageCount, mesg, &timeinfo))
-    {
-        std::cout << "Error reading message" << std::endl;
-    }
-    else
-    {
-        std::cout << "Got a message!" << std::endl;
-    }
-
-    if(cwiid_get_mesg(wiimote, &messageCount, mesg, &timeinfo))
-    {
-        std::cout << "Error reading message" << std::endl;
-    }
-    else
-    {
-        std::cout << "Got a message!" << std::endl;
-    }
-
-
-    std::cout << "Turning on LED 1" << std::endl;
-    cwiid_command(wiimote, CWIID_CMD_LED, CWIID_LED1_ON);
-    SDL_Delay(1000);
-
-    std::cout << "Turning off LED 1" << std::endl;
-    cwiid_command(wiimote, CWIID_CMD_LED, 0);
-    SDL_Delay(5000);
-
-    
-    
-    cwiid_close(wiimote);
-    std::cout << "exiting" << std::endl;
-    exit(0);
-*/
 
     if(argc > 1)
     {
@@ -135,15 +83,9 @@ int main(int argc, char *argv[])
     ship.Draw();
     SDL_GL_SwapWindow(pWindow);
 
-    if (cwiid_set_mesg_callback(wiimote, &cwiid_callback))
-    {
-        std::cerr << "Error setting callback.  Exitting" << std::endl;
-        cwiid_close(wiimote);
-        exit(2);
-    }
-    std::cout << "Commanding reporting BTN" << std::endl;
-    cwiid_command(wiimote, CWIID_CMD_RPT_MODE, CWIID_RPT_ACC| CWIID_RPT_BTN);
-    
+    setupWiiMote();
+
+
     //Box timing stuff
     float32 timeStep = 1.0f / 60.0f;
     int32 velocityIterations = 6;
@@ -163,6 +105,39 @@ int main(int argc, char *argv[])
             case SDL_QUIT:
                 bQuit=true;
                 break;
+
+
+
+            case SDL_KEYDOWN:
+            {
+                switch(event.key.keysym.sym)
+                {
+                case SDLK_q:
+                {
+                    bQuit = true;
+                    break;
+                }
+                case SDLK_d:
+                {
+                    ship.rotateRight();
+                    break;
+                }
+                case SDLK_a:
+                {
+                    ship.rotateLeft();
+                    break;
+                }
+                case SDLK_w:
+                    break;
+                case SDLK_s:
+                    break;
+                default:
+                    //do nothing
+                    break;
+                }
+                break;
+            }
+
             case SDL_USEREVENT:
             {
                 if(event.user.type == wiiButtonEvent)
@@ -175,11 +150,11 @@ int main(int argc, char *argv[])
                     {
                         ship.rotateRight();
                     }
-                    if(event.user.code & CWIID_BTN_UP)
+                    if(event.user.code & CWIID_BTN_RIGHT)
                     {
                         ship.translateUp();
                     }
-                    if(event.user.code & CWIID_BTN_DOWN)
+                    if(event.user.code & CWIID_BTN_LEFT)
                     {
                         ship.translateDown();
                     }
@@ -318,3 +293,71 @@ void cwiid_callback(
     }
 }
 
+
+/********************/
+void setupWiiMote()
+{
+    std::cout << "Put wiimote into discovery mode (press 1+2)" << std::endl;
+    wiimote = cwiid_open(&bdaddr, CWIID_FLAG_MESG_IFC);
+    if(wiimote == NULL)
+    {
+        std::cerr << "No connection. Quitting" << std::endl;
+        exit(1);
+    }
+    else
+    {
+        std::cout << "Connected" << std::endl;
+    }
+
+
+
+
+/*
+    int messageCount = 0;
+    cwiid_mesg *mesg[100];
+    timespec timeinfo;
+
+    if(cwiid_get_mesg(wiimote, &messageCount, mesg, &timeinfo))
+    {
+        std::cout << "Error reading message" << std::endl;
+    }
+    else
+    {
+        std::cout << "Got a message!" << std::endl;
+    }
+
+    if(cwiid_get_mesg(wiimote, &messageCount, mesg, &timeinfo))
+    {
+        std::cout << "Error reading message" << std::endl;
+    }
+    else
+    {
+        std::cout << "Got a message!" << std::endl;
+    }
+
+
+    std::cout << "Turning on LED 1" << std::endl;
+    cwiid_command(wiimote, CWIID_CMD_LED, CWIID_LED1_ON);
+    SDL_Delay(1000);
+
+    std::cout << "Turning off LED 1" << std::endl;
+    cwiid_command(wiimote, CWIID_CMD_LED, 0);
+    SDL_Delay(5000);
+
+    
+    
+    cwiid_close(wiimote);
+    std::cout << "exiting" << std::endl;
+    exit(0);
+*/
+    if (cwiid_set_mesg_callback(wiimote, &cwiid_callback))
+    {
+        std::cerr << "Error setting callback.  Exitting" << std::endl;
+        cwiid_close(wiimote);
+        exit(2);
+    }
+    std::cout << "Commanding reporting BTN" << std::endl;
+    cwiid_command(wiimote, CWIID_CMD_RPT_MODE, CWIID_RPT_BTN);
+
+
+}

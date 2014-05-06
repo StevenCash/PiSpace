@@ -37,18 +37,19 @@ private:
     GLuint m_indexBuffer;
     GLuint m_numIndices;
     GLfloat m_angle;
-    GLfloat m_yOffset;
-    GLfloat m_xOffset;
 
     //Box2D parameters
     //vector that should always point "forward"
     //for use with a "thrust"
     b2Vec2 m_forward;
 
+    //reference to the world to use for Box
     b2World& m_worldRef;
-    b2BodyDef m_bodyDef;
-    b2Body *m_pBody;
 
+    b2BodyDef m_bodyDef;
+    
+    //should destroy this body in the destructor
+    b2Body *m_pBody;
 };
 
 #endif //SHIP_H

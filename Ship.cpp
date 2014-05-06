@@ -1,3 +1,5 @@
+//7th str and oleander,  mexico beach fl
+
 #include <algorithm>
 #include <iostream>
 
@@ -8,8 +10,6 @@
 
 Ship::Ship(b2World& world):
     m_angle(0.0f),
-    m_yOffset(0.0f),
-    m_xOffset(0.0f),
     m_forward(0.0,-1.0f),
     m_worldRef(world)
 
@@ -17,7 +17,7 @@ Ship::Ship(b2World& world):
 
     //Set up the object for Box2D
     m_bodyDef.type = b2_dynamicBody;
-    m_bodyDef.position.Set(5.0f,5.0f); //trying to start at the center
+    m_bodyDef.position.Set(0.0f,0.0f); //trying to start at the center
     m_pBody = m_worldRef.CreateBody(&m_bodyDef);
     b2PolygonShape shipShape;
 
@@ -27,13 +27,13 @@ Ship::Ship(b2World& world):
     //Vertices definitions for use by both OpenGL and Box2D
     TempStruct shipVertices[] =
         {
-            {{ 0.0f, 0.3f, 0.0f,1.0f}, //0
+            {{ 0.0f, 0.06f, 0.0f,1.0f}, //0
              {1.0, 0.0, 0.0, 1.0}},
-            {{-0.3f, -0.1f, 0.0f,1.0f}, //1
+            {{-0.06f, -0.02f, 0.0f,1.0f}, //1
              {0.0, 1.0, 0.0, 1.0}},
             {{0.0f, 0.0f, 0.0f,1.0f}, //2
              {0.0, 1.0, 0.0, 1.0}},
-            {{0.3f, -0.1f, 0.0f,1.0f}, //3
+            {{0.06f, -0.02f, 0.0f,1.0f}, //3
              {0.0, 1.0, 0.0, 1.0}}
         };
 
@@ -105,11 +105,21 @@ void Ship::Draw()
      //get a handle for the rotation uniform;
      GLuint rotation = glGetUniformLocation(m_shaderProgram,"rotation");
      glm::mat4 modelMatrix(1.0f);
-     
-     //Rotate
-//     modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2));
+
+     //glm translation vector
+     b2Vec2 position = m_pBody->GetWorldCenter();
+
+     //translate in OpenGL coordinates
+     glm::vec3 transVector(
+         BOX2GL(position.x),
+         BOX2GL(position.y),
+         0.0f
+         );
+
+     //Translate then Rotate
+     modelMatrix = glm::translate(modelMatrix, transVector); 
      modelMatrix = glm::rotate(modelMatrix, (float)RAD2DEG(m_pBody->GetAngle()),glm::vec3(0.0f,0.0f,-1.0f));       
-//    modelMatrix = glm::translate(modelMatrix, glm::vec3(m_xOffset, m_yOffset, 0.0f)); 
+
      glUniformMatrix4fv(rotation, 1, GL_FALSE, glm::value_ptr(modelMatrix));
     //get a handle to the vPosition attribute of the shader
     //this can/should be done right after linking the shader and
@@ -149,24 +159,35 @@ Ship::~Ship()
 {
 }
 
+#define MAX_ANGULAR_VEL 10.0f
 void Ship::rotateRight()
 {
-    m_pBody->SetAngularVelocity(1.0f);
-    std::cout << "AV = " << m_pBody->GetAngularVelocity() << std::endl;
+    m_angle += 0.5f;
+    if(m_angle > MAX_ANGULAR_VEL)
+    {
+        m_angle = MAX_ANGULAR_VEL;
+    }
+
+    m_pBody->SetAngularVelocity(m_angle);
 }
 
 void Ship::rotateLeft()
 {
-    m_pBody->SetAngularVelocity(-1.0f);
-    std::cout << "AV = " << m_pBody->GetAngularVelocity() << std::endl;
+    m_angle -= 0.5f;
+    if(m_angle < -MAX_ANGULAR_VEL)
+    {
+        m_angle = -MAX_ANGULAR_VEL;
+    }
+
+    m_pBody->SetAngularVelocity(m_angle);
 }
 
 void Ship::translateUp()
 {
-    m_yOffset += 0.1f;
+    m_pBody->SetLinearVelocity(b2Vec2(0.0f,-1.0f));
 }
 
 void Ship::translateDown()
 {
-    m_yOffset -= 0.1f;
+    m_pBody->SetLinearVelocity(b2Vec2(0.0f,1.0f));
 }
