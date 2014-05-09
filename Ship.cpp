@@ -8,6 +8,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
 
+#define GLM_FORCE_RADIANS 1
+
 Ship::Ship(b2World& world):
     m_angle(0.0f),
     m_forward(0.0,-1.0f),
@@ -49,6 +51,7 @@ Ship::Ship(b2World& world):
     fixtureDef.shape = &shipShape;
     fixtureDef.density = 1.0f;
     fixtureDef.friction = 0.3f;
+    fixtureDef.restitution = 0.3f;
     m_pBody->CreateFixture(&fixtureDef);
 
 
@@ -115,10 +118,13 @@ void Ship::Draw()
          BOX2GL(position.y),
          0.0f
          );
+     
+
+     float angleDeg = RAD2DEG(m_pBody->GetAngle());
 
      //Translate then Rotate
      modelMatrix = glm::translate(modelMatrix, transVector); 
-     modelMatrix = glm::rotate(modelMatrix, (float)RAD2DEG(m_pBody->GetAngle()),glm::vec3(0.0f,0.0f,-1.0f));       
+     modelMatrix = glm::rotate(modelMatrix, angleDeg,glm::vec3(0.0f,0.0f,-1.0f));       
 
      glUniformMatrix4fv(rotation, 1, GL_FALSE, glm::value_ptr(modelMatrix));
     //get a handle to the vPosition attribute of the shader
@@ -162,6 +168,7 @@ Ship::~Ship()
 #define MAX_ANGULAR_VEL 10.0f
 void Ship::rotateRight()
 {
+/* TBD
     m_angle += 0.5f;
     if(m_angle > MAX_ANGULAR_VEL)
     {
@@ -169,25 +176,53 @@ void Ship::rotateRight()
     }
 
     m_pBody->SetAngularVelocity(m_angle);
+*/
+    m_pBody->SetLinearVelocity(b2Vec2(5.0f,0.0f));
 }
 
 void Ship::rotateLeft()
 {
+/*
     m_angle -= 0.5f;
     if(m_angle < -MAX_ANGULAR_VEL)
     {
         m_angle = -MAX_ANGULAR_VEL;
     }
-
+*/
     m_pBody->SetAngularVelocity(m_angle);
+
+    m_pBody->SetLinearVelocity(b2Vec2(-5.0f,0.0f));
 }
 
 void Ship::translateUp()
 {
-    m_pBody->SetLinearVelocity(b2Vec2(0.0f,-1.0f));
+/*
+    float angleDeg = RAD2DEG(m_pBody->GetAngle());
+    m_forward.x = 5.0f * sinf(angleDeg);
+    m_forward.y = 5.0f * cosf(angleDeg);
+    m_pBody->ApplyForceToCenter(m_forward, true);
+*/
+    m_pBody->SetLinearVelocity(b2Vec2(0.0f,5.0f));
+
 }
 
 void Ship::translateDown()
 {
-    m_pBody->SetLinearVelocity(b2Vec2(0.0f,1.0f));
+/*
+    float angleDeg = RAD2DEG(m_pBody->GetAngle());
+    m_forward.x = -5.0f * sinf(angleDeg);
+    m_forward.y = -5.0f * cosf(angleDeg);
+    m_pBody->ApplyForceToCenter(m_forward, true);
+*/
+    m_pBody->SetLinearVelocity(b2Vec2(0.0f,-5.0f));
+
+}
+
+void Ship::Status()
+{
+    std::cout << "Status: " 
+              << m_pBody->GetWorldCenter().x 
+              << " " 
+              << m_pBody->GetWorldCenter().y 
+              << std::endl;
 }

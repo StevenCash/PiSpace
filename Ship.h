@@ -24,6 +24,7 @@ public:
     ~Ship();
     //The function that actually puts the object on the screen
     void Draw();
+    void Status();
     void rotateRight();
     void rotateLeft();
     void translateUp();

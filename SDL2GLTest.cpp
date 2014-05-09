@@ -20,6 +20,7 @@
 //function prototype
 void setupDisplay(int screenx=1920, int screeny=1080, int flags=0);
 void setupWiiMote();
+void setupWalls();
 
 /* Wiimote Callback */
 cwiid_mesg_callback_t cwiid_callback;
@@ -41,6 +42,10 @@ cwiid_wiimote_t *wiimote = NULL;
 
 
 //World for use with Box2D with no gravity
+//positive 10.0 is up
+//negative 10.0 is down
+//positive is right,
+//negative is left
 b2World World(b2Vec2(0.0f,0.0f));
 
 
@@ -70,22 +75,16 @@ int main(int argc, char *argv[])
     wiiButtonEvent = SDL_RegisterEvents(1);
     wiiAccelEvent = SDL_RegisterEvents(1);
 
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-    
-    //clear the double buffers in hopes that 
-    //it will clear EVERYTHING
-    glClearColor(0.0f,0.0f,0.0f,1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     //initial display
     Ship ship(World);
-    ship.Draw();
+//    ship.Draw();
     SDL_GL_SwapWindow(pWindow);
 
     setupWiiMote();
 
 
+    setupWalls();
     //Box timing stuff
     float32 timeStep = 1.0f / 60.0f;
     int32 velocityIterations = 6;
@@ -105,9 +104,6 @@ int main(int argc, char *argv[])
             case SDL_QUIT:
                 bQuit=true;
                 break;
-
-
-
             case SDL_KEYDOWN:
             {
                 switch(event.key.keysym.sym)
@@ -182,6 +178,7 @@ int main(int argc, char *argv[])
         }
         World.Step(timeStep, velocityIterations, positionIterations);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        ship.Status();
         ship.Draw();
         SDL_GL_SwapWindow(pWindow);
         SDL_Delay(100);
@@ -241,6 +238,15 @@ void setupDisplay(int screenx, int screeny, int flags)
     glContext = SDL_GL_CreateContext(pWindow);
     //just use the max size for the GL Viewport
     glViewport(0,0,1920,1080);
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    
+    //clear the double buffers in hopes that 
+    //it will clear EVERYTHING
+    glClearColor(0.0f,0.0f,0.0f,1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 }
 
 
@@ -307,6 +313,7 @@ void setupWiiMote()
     else
     {
         std::cout << "Connected" << std::endl;
+        cwiid_command(wiimote, CWIID_CMD_LED, CWIID_LED1_ON);
     }
 
 
@@ -359,5 +366,60 @@ void setupWiiMote()
     std::cout << "Commanding reporting BTN" << std::endl;
     cwiid_command(wiimote, CWIID_CMD_RPT_MODE, CWIID_RPT_BTN);
 
+
+}
+
+
+void setupWalls()
+{
+    // Define the top edge body.
+    b2BodyDef topBodyDef;
+    topBodyDef.position.Set(0.0f, 10.0f);
+  
+    // Call the body factory which allocates memory for the ground body
+    // from a pool and creates the ground box shape (also from a pool).
+    // The body is also added to the world.
+    b2Body* topBody = World.CreateBody(&topBodyDef);
+    b2EdgeShape topEdge;
+    topEdge.Set(b2Vec2(0.0, 0.0), b2Vec2(10.0,0.0));
+    topBody->CreateFixture(&topEdge, 0.0f);
+
+
+    // Define the left body.
+    b2BodyDef leftBodyDef;
+    leftBodyDef.position.Set(0.0f, 0.0f);
+  
+    // Call the body factory which allocates memory for the left body
+    // from a pool and creates the left box shape (also from a pool).
+    // The body is also added to the world.
+    b2Body* leftBody = World.CreateBody(&leftBodyDef);
+    b2EdgeShape leftEdge;
+    leftEdge.Set(b2Vec2(0.0f, 0.0f), b2Vec2(0.0f,10.0f));
+    leftBody->CreateFixture(&leftEdge, 0.0f);
+
+    // Define the ground body.
+    b2BodyDef groundBodyDef;
+    groundBodyDef.position.Set(0.0f, 0.0f);
+  
+    // Call the body factory which allocates memory for the ground body
+    // from a pool and creates the ground box shape (also from a pool).
+    // The body is also added to the world.
+    b2Body* groundBody = World.CreateBody(&groundBodyDef);
+    b2EdgeShape groundEdge;
+    groundEdge.Set(b2Vec2(0.0f, 0.0f), b2Vec2(10.0f,0.0f));
+    groundBody->CreateFixture(&groundEdge, 0.0f);
+
+
+    // Define the right body.
+    b2BodyDef rightBodyDef;
+    rightBodyDef.position.Set(0.0f, 0.0f);
+  
+    // Call the body factory which allocates memory for the right body
+    // from a pool and creates the right box shape (also from a pool).
+    // The body is also added to the world.
+    b2Body* rightBody = World.CreateBody(&rightBodyDef);
+    b2EdgeShape rightEdge;
+    rightEdge.Set(b2Vec2(10.0f, 0.0f), b2Vec2(10.0f,10.0f));
+    rightBody->CreateFixture(&rightEdge, 0.0f);
 
 }
