@@ -28,13 +28,13 @@ Ship::Ship(b2World& world):
     //Vertices definitions for use by both OpenGL and Box2D
     TempStruct shipVertices[] =
         {
-            {{ 0.0f, 0.3f, 0.0f,1.0f}, //0
+            {{ 0.0f, 0.5f, 0.0f,1.0f}, //0
              {1.0, 1.0, 1.0, 1.0}},
-            {{-0.3f, -0.1f, 0.0f,1.0f}, //1
+            {{-0.5f, -0.5f, 0.0f,1.0f}, //1
              {0.0, 0.0, 1.0, 1.0}},
             {{0.0f, 0.0f, 0.0f,1.0f}, //2
              {0.0, 0.0, 1.0, 1.0}},
-            {{0.3f, -0.1f, 0.0f,1.0f}, //3
+            {{0.5f, -0.5, 0.0f,1.0f}, //3
              {0.0, 0.0, 1.0, 1.0}}
         };
 
@@ -149,7 +149,6 @@ void Ship::Draw()
 
 
     glDisableVertexAttribArray(vertexAttribute);
-//    glDisableVertexAttribArray(colorAttribute);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glUseProgram(0);
@@ -165,7 +164,6 @@ Ship::~Ship()
 #define MAX_ANGULAR_VEL 10.0f
 void Ship::rotateRight()
 {
-/* TBD
     m_angle += 0.5f;
     if(m_angle > MAX_ANGULAR_VEL)
     {
@@ -173,45 +171,42 @@ void Ship::rotateRight()
     }
 
     m_pBody->SetAngularVelocity(m_angle);
-*/
-    m_pBody->SetLinearVelocity(b2Vec2(8.0f,0.0f));
 }
 
 void Ship::rotateLeft()
 {
-/*
+
     m_angle -= 0.5f;
     if(m_angle < -MAX_ANGULAR_VEL)
     {
         m_angle = -MAX_ANGULAR_VEL;
     }
-*/
+
     m_pBody->SetAngularVelocity(m_angle);
 
-    m_pBody->SetLinearVelocity(b2Vec2(-8.0f,0.0f));
 }
 
 void Ship::translateUp()
 {
-/*
-    float angleDeg = RAD2DEG(m_pBody->GetAngle());
-    m_forward.x = 5.0f * sinf(angleDeg);
-    m_forward.y = 5.0f * cosf(angleDeg);
-    m_pBody->ApplyForceToCenter(m_forward, true);
-*/
     m_pBody->SetLinearVelocity(b2Vec2(0.0f,8.0f));
 
 }
 
 void Ship::translateDown()
 {
-/*
-    float angleDeg = RAD2DEG(m_pBody->GetAngle());
-    m_forward.x = -5.0f * sinf(angleDeg);
-    m_forward.y = -5.0f * cosf(angleDeg);
-    m_pBody->ApplyForceToCenter(m_forward, true);
-*/
     m_pBody->SetLinearVelocity(b2Vec2(0.0f,-8.0f));
+
+}
+
+void Ship::translateRight()
+{
+    m_pBody->SetLinearVelocity(b2Vec2(8.0f,0.0f));
+
+}
+
+void Ship::translateLeft()
+{
+    m_pBody->SetLinearVelocity(b2Vec2(-8.0f,0.0f));
 
 }
 

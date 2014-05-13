@@ -29,6 +29,8 @@ public:
     void rotateLeft();
     void translateUp();
     void translateDown();
+    void translateRight();
+    void translateLeft();
 private:
     //only using 1 vertex buffer for this object
     GLuint m_vertexBufferHandleArray[1];    

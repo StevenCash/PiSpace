@@ -137,11 +137,11 @@ int main(int argc, char *argv[])
                 {
                     if(event.user.code & CWIID_BTN_UP)
                     {
-                        ship.rotateLeft();
+                        ship.translateLeft();
                     }
                     if(event.user.code & CWIID_BTN_DOWN)
                     {
-                        ship.rotateRight();
+                        ship.translateRight();
                     }
                     if(event.user.code & CWIID_BTN_RIGHT)
                     {
@@ -155,6 +155,15 @@ int main(int argc, char *argv[])
                     {
                         bQuit = true;
                     }
+                    if(event.user.code & CWIID_BTN_1)
+                    {
+                        ship.rotateLeft();
+                    }
+                    if(event.user.code & CWIID_BTN_2)
+                    {
+                        ship.rotateRight();
+                    }
+
                 }
                 else if(event.user.type == wiiAccelEvent)
                 {
