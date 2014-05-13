@@ -8,7 +8,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
 
-#define GLM_FORCE_RADIANS 1
 
 Ship::Ship(b2World& world):
     m_angle(0.0f),
@@ -19,7 +18,7 @@ Ship::Ship(b2World& world):
 
     //Set up the object for Box2D
     m_bodyDef.type = b2_dynamicBody;
-    m_bodyDef.position.Set(0.0f,0.0f); //trying to start at the center
+    m_bodyDef.position.Set(5.0f,5.0f); //trying to start at the center
     m_pBody = m_worldRef.CreateBody(&m_bodyDef);
     b2PolygonShape shipShape;
 
@@ -29,20 +28,20 @@ Ship::Ship(b2World& world):
     //Vertices definitions for use by both OpenGL and Box2D
     TempStruct shipVertices[] =
         {
-            {{ 0.0f, 0.06f, 0.0f,1.0f}, //0
-             {1.0, 0.0, 0.0, 1.0}},
-            {{-0.06f, -0.02f, 0.0f,1.0f}, //1
-             {0.0, 1.0, 0.0, 1.0}},
+            {{ 0.0f, 0.3f, 0.0f,1.0f}, //0
+             {1.0, 1.0, 1.0, 1.0}},
+            {{-0.3f, -0.1f, 0.0f,1.0f}, //1
+             {0.0, 0.0, 1.0, 1.0}},
             {{0.0f, 0.0f, 0.0f,1.0f}, //2
-             {0.0, 1.0, 0.0, 1.0}},
-            {{0.06f, -0.02f, 0.0f,1.0f}, //3
-             {0.0, 1.0, 0.0, 1.0}}
+             {0.0, 0.0, 1.0, 1.0}},
+            {{0.3f, -0.1f, 0.0f,1.0f}, //3
+             {0.0, 0.0, 1.0, 1.0}}
         };
 
     for(int index=0; index < 4; ++index)
     {
-        boxShipVertices[index].x = GL2BOX(shipVertices[index].vertices[0]);
-        boxShipVertices[index].y = GL2BOX(shipVertices[index].vertices[1]);
+        boxShipVertices[index].x = (shipVertices[index].vertices[0]);
+        boxShipVertices[index].y = (shipVertices[index].vertices[1]);
     }
 
     shipShape.Set(boxShipVertices, 4);
@@ -106,27 +105,25 @@ void Ship::Draw()
      glUseProgram(m_shaderProgram);
 
      //get a handle for the rotation uniform;
-     GLuint rotation = glGetUniformLocation(m_shaderProgram,"rotation");
+     GLuint locationMVP = glGetUniformLocation(m_shaderProgram,"mvpMatrix");
      glm::mat4 modelMatrix(1.0f);
 
      //glm translation vector
      b2Vec2 position = m_pBody->GetWorldCenter();
-
-     //translate in OpenGL coordinates
-     glm::vec3 transVector(
-         BOX2GL(position.x),
-         BOX2GL(position.y),
-         0.0f
-         );
      
-
-     float angleDeg = RAD2DEG(m_pBody->GetAngle());
+     //box uses radians, GLM uses degrees
+     float angleDeg = -1.0f *RAD2DEG(m_pBody->GetAngle());
 
      //Translate then Rotate
-     modelMatrix = glm::translate(modelMatrix, transVector); 
-     modelMatrix = glm::rotate(modelMatrix, angleDeg,glm::vec3(0.0f,0.0f,-1.0f));       
-
-     glUniformMatrix4fv(rotation, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+     modelMatrix = 
+         glm::translate(modelMatrix, glm::vec3(position.x, position.y, 0.0f)); 
+     modelMatrix = 
+         glm::rotate(modelMatrix, angleDeg,glm::vec3(0.0f,0.0f,-1.0f));    
+     glm::mat4 projMat = glm::ortho(0.0f,10.0f,0.0f,10.0f);   
+     glm::mat4 viewMat(1.0f);
+     glm::mat4 mvpMat = projMat * viewMat * modelMatrix;
+     
+     glUniformMatrix4fv(locationMVP, 1, GL_FALSE, glm::value_ptr(mvpMat));
     //get a handle to the vPosition attribute of the shader
     //this can/should be done right after linking the shader and
     //stored in a member variable
@@ -177,7 +174,7 @@ void Ship::rotateRight()
 
     m_pBody->SetAngularVelocity(m_angle);
 */
-    m_pBody->SetLinearVelocity(b2Vec2(5.0f,0.0f));
+    m_pBody->SetLinearVelocity(b2Vec2(8.0f,0.0f));
 }
 
 void Ship::rotateLeft()
@@ -191,7 +188,7 @@ void Ship::rotateLeft()
 */
     m_pBody->SetAngularVelocity(m_angle);
 
-    m_pBody->SetLinearVelocity(b2Vec2(-5.0f,0.0f));
+    m_pBody->SetLinearVelocity(b2Vec2(-8.0f,0.0f));
 }
 
 void Ship::translateUp()
@@ -202,7 +199,7 @@ void Ship::translateUp()
     m_forward.y = 5.0f * cosf(angleDeg);
     m_pBody->ApplyForceToCenter(m_forward, true);
 */
-    m_pBody->SetLinearVelocity(b2Vec2(0.0f,5.0f));
+    m_pBody->SetLinearVelocity(b2Vec2(0.0f,8.0f));
 
 }
 
@@ -214,7 +211,7 @@ void Ship::translateDown()
     m_forward.y = -5.0f * cosf(angleDeg);
     m_pBody->ApplyForceToCenter(m_forward, true);
 */
-    m_pBody->SetLinearVelocity(b2Vec2(0.0f,-5.0f));
+    m_pBody->SetLinearVelocity(b2Vec2(0.0f,-8.0f));
 
 }
 

@@ -14,7 +14,6 @@
 #include <Box2D/Box2D.h>
 #include "Ship.h"
 
-#include "Ship.h"
 
 
 //function prototype
@@ -58,8 +57,6 @@ int main(int argc, char *argv[])
 //        reset_bdaddr = true;
 //    }
 
-
-
     if(argc > 1)
     {
         std::cout << argv[1] << std::endl;
@@ -78,7 +75,7 @@ int main(int argc, char *argv[])
 
     //initial display
     Ship ship(World);
-//    ship.Draw();
+    ship.Draw();
     SDL_GL_SwapWindow(pWindow);
 
     setupWiiMote();
@@ -178,7 +175,7 @@ int main(int argc, char *argv[])
         }
         World.Step(timeStep, velocityIterations, positionIterations);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        ship.Status();
+//        ship.Status();
         ship.Draw();
         SDL_GL_SwapWindow(pWindow);
         SDL_Delay(100);
@@ -412,14 +409,14 @@ void setupWalls()
 
     // Define the right body.
     b2BodyDef rightBodyDef;
-    rightBodyDef.position.Set(0.0f, 0.0f);
+    rightBodyDef.position.Set(10.0f, 0.0f);
   
     // Call the body factory which allocates memory for the right body
     // from a pool and creates the right box shape (also from a pool).
     // The body is also added to the world.
     b2Body* rightBody = World.CreateBody(&rightBodyDef);
     b2EdgeShape rightEdge;
-    rightEdge.Set(b2Vec2(10.0f, 0.0f), b2Vec2(10.0f,10.0f));
+    rightEdge.Set(b2Vec2(0.0f, 0.0f), b2Vec2(0.0f,10.0f));
     rightBody->CreateFixture(&rightEdge, 0.0f);
 
 }
