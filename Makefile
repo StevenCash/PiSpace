@@ -19,6 +19,7 @@ OBJECTS=\
 SDL2GLTest.o\
 ShaderUtil.o\
 Ship.o\
+GenericDrawing.o \
 
 
 TARGET=sdl2gl

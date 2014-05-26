@@ -3,6 +3,7 @@
 
 #include <SDL2/SDL_opengles2.h> 
 #include <Box2D/Box2D.h>
+#include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
 
 #define GL2BOX(x) (((x)*5.0f)+5.0f)
 #define BOX2GL(x) (((x)-5.0f)/5.0f)
@@ -32,6 +33,9 @@ public:
     void translateRight();
     void translateLeft();
 private:
+    glm::mat4 m_projMat;
+    glm::vec3 m_rotateAxis;
+
     //only using 1 vertex buffer for this object
     GLuint m_vertexBufferHandleArray[1];    
     GLuint m_colorBufferHandleArray[1];    

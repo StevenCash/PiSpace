@@ -10,6 +10,8 @@
 
 
 Ship::Ship(b2World& world):
+    m_projMat(glm::ortho(-10.0f,10.0f,-10.0f,10.0f)),
+    m_rotateAxis(glm::vec3(0.0f,0.0f,1.0f)),
     m_angle(0.0f),
     m_forward(0.0,-1.0f),
     m_worldRef(world)
@@ -30,11 +32,11 @@ Ship::Ship(b2World& world):
         {
             {{ 0.0f, 0.5f, 0.0f,1.0f}, //0
              {1.0, 1.0, 1.0, 1.0}},
-            {{-0.5f, -0.5f, 0.0f,1.0f}, //1
+            {{-0.4f, -0.5f, 0.0f,1.0f}, //1
              {0.0, 0.0, 1.0, 1.0}},
             {{0.0f, 0.0f, 0.0f,1.0f}, //2
              {0.0, 0.0, 1.0, 1.0}},
-            {{0.5f, -0.5, 0.0f,1.0f}, //3
+            {{0.4f, -0.5, 0.0f,1.0f}, //3
              {0.0, 0.0, 1.0, 1.0}}
         };
 
@@ -50,7 +52,7 @@ Ship::Ship(b2World& world):
     fixtureDef.shape = &shipShape;
     fixtureDef.density = 1.0f;
     fixtureDef.friction = 0.3f;
-    fixtureDef.restitution = 0.3f;
+    fixtureDef.restitution = 0.0f;
     m_pBody->CreateFixture(&fixtureDef);
 
 
@@ -102,6 +104,18 @@ Ship::Ship(b2World& world):
 //Main drawing function for this Ship
 void Ship::Draw()
 {
+
+    //Dump the projection matrix
+/*
+    for(int i=0;i<4;++i)
+    {
+        for(int j=0;j<4;++j)
+        {
+            std::cout << m_projMat[i][j] <<" ";
+        }
+        std::cout << std::endl;
+    }
+*/
      glUseProgram(m_shaderProgram);
 
      //get a handle for the rotation uniform;
@@ -112,16 +126,16 @@ void Ship::Draw()
      b2Vec2 position = m_pBody->GetWorldCenter();
      
      //box uses radians, GLM uses degrees
-     float angleDeg = -1.0f *RAD2DEG(m_pBody->GetAngle());
+     float angleDeg = RAD2DEG(m_pBody->GetAngle());
 
      //Translate then Rotate
      modelMatrix = 
          glm::translate(modelMatrix, glm::vec3(position.x, position.y, 0.0f)); 
      modelMatrix = 
-         glm::rotate(modelMatrix, angleDeg,glm::vec3(0.0f,0.0f,-1.0f));    
-     glm::mat4 projMat = glm::ortho(0.0f,10.0f,0.0f,10.0f);   
-     glm::mat4 viewMat(1.0f);
-     glm::mat4 mvpMat = projMat * viewMat * modelMatrix;
+         glm::rotate(modelMatrix, angleDeg + 180.0f, m_rotateAxis);    
+
+     //skipping the view matrix, because we don't need it
+     glm::mat4 mvpMat = m_projMat * modelMatrix;
      
      glUniformMatrix4fv(locationMVP, 1, GL_FALSE, glm::value_ptr(mvpMat));
     //get a handle to the vPosition attribute of the shader
@@ -164,7 +178,7 @@ Ship::~Ship()
 #define MAX_ANGULAR_VEL 10.0f
 void Ship::rotateRight()
 {
-    m_angle += 0.5f;
+    m_angle += 2.0f;
     if(m_angle > MAX_ANGULAR_VEL)
     {
         m_angle = MAX_ANGULAR_VEL;
@@ -176,12 +190,12 @@ void Ship::rotateRight()
 void Ship::rotateLeft()
 {
 
-    m_angle -= 0.5f;
+    m_angle -= 2.0f;
     if(m_angle < -MAX_ANGULAR_VEL)
     {
         m_angle = -MAX_ANGULAR_VEL;
     }
-
+    
     m_pBody->SetAngularVelocity(m_angle);
 
 }

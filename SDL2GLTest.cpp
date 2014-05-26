@@ -13,7 +13,7 @@
 //Box 2D
 #include <Box2D/Box2D.h>
 #include "Ship.h"
-
+#include "DebugDraw.h"
 
 
 //function prototype
@@ -72,8 +72,10 @@ int main(int argc, char *argv[])
     wiiButtonEvent = SDL_RegisterEvents(1);
     wiiAccelEvent = SDL_RegisterEvents(1);
 
-
+//    DebugDraw debugDraw;
+//    debugDraw.SetFlags(0xFFFF);
     //initial display
+//    World.SetDebugDraw(&debugDraw);
     Ship ship(World);
     ship.Draw();
     SDL_GL_SwapWindow(pWindow);
@@ -184,20 +186,15 @@ int main(int argc, char *argv[])
         }
         World.Step(timeStep, velocityIterations, positionIterations);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//        ship.Status();
         ship.Draw();
         SDL_GL_SwapWindow(pWindow);
+//        World.DrawDebugData();
         SDL_Delay(100);
-        
+     
+        //TGC
+
     }
     
-    
-    if((SDL_GetTicks() - timestamp) > 30000)
-    {
-        bQuit = true;
-    }
-
-
 
 
     //clean up everything set up by the display
@@ -205,6 +202,7 @@ int main(int argc, char *argv[])
     SDL_DestroyWindow(pWindow);
     pWindow = 0;
     SDL_Quit();
+    std::cout << "Finished" << std::endl;
 }
 
 
@@ -378,47 +376,45 @@ void setupWiiMote()
 
 void setupWalls()
 {
+
     // Define the top edge body.
     b2BodyDef topBodyDef;
-    topBodyDef.position.Set(0.0f, 10.0f);
-  
+    topBodyDef.position.Set(-10.0f, 10.0f);
+    
     // Call the body factory which allocates memory for the ground body
     // from a pool and creates the ground box shape (also from a pool).
     // The body is also added to the world.
     b2Body* topBody = World.CreateBody(&topBodyDef);
     b2EdgeShape topEdge;
-    topEdge.Set(b2Vec2(0.0, 0.0), b2Vec2(10.0,0.0));
+    topEdge.Set(b2Vec2(0.0, 0.0), b2Vec2(20.0,0.0));
     topBody->CreateFixture(&topEdge, 0.0f);
 
 
     // Define the left body.
-    b2BodyDef leftBodyDef;
-    leftBodyDef.position.Set(0.0f, 0.0f);
-  
     // Call the body factory which allocates memory for the left body
     // from a pool and creates the left box shape (also from a pool).
     // The body is also added to the world.
-    b2Body* leftBody = World.CreateBody(&leftBodyDef);
+    b2Body* leftBody = World.CreateBody(&topBodyDef);
     b2EdgeShape leftEdge;
-    leftEdge.Set(b2Vec2(0.0f, 0.0f), b2Vec2(0.0f,10.0f));
+    leftEdge.Set(b2Vec2(0.0f, 0.0f), b2Vec2(0.0f,20.0f));
     leftBody->CreateFixture(&leftEdge, 0.0f);
 
     // Define the ground body.
     b2BodyDef groundBodyDef;
-    groundBodyDef.position.Set(0.0f, 0.0f);
+    groundBodyDef.position.Set(-10.0f, -10.0f);
   
     // Call the body factory which allocates memory for the ground body
     // from a pool and creates the ground box shape (also from a pool).
     // The body is also added to the world.
     b2Body* groundBody = World.CreateBody(&groundBodyDef);
     b2EdgeShape groundEdge;
-    groundEdge.Set(b2Vec2(0.0f, 0.0f), b2Vec2(10.0f,0.0f));
+    groundEdge.Set(b2Vec2(0.0f, 0.0f), b2Vec2(20.0f,0.0f));
     groundBody->CreateFixture(&groundEdge, 0.0f);
 
 
     // Define the right body.
     b2BodyDef rightBodyDef;
-    rightBodyDef.position.Set(10.0f, 0.0f);
+    rightBodyDef.position.Set(10.0f, -10.0f);
   
     // Call the body factory which allocates memory for the right body
     // from a pool and creates the right box shape (also from a pool).
