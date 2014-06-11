@@ -21,6 +21,7 @@ ShaderUtil.o\
 Ship.o\
 GenericDrawing.o \
 
+DEBUGFLAGS=-DDEBUG
 
 TARGET=sdl2gl
 

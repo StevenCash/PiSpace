@@ -72,18 +72,33 @@ int main(int argc, char *argv[])
     wiiButtonEvent = SDL_RegisterEvents(1);
     wiiAccelEvent = SDL_RegisterEvents(1);
 
-//    DebugDraw debugDraw;
-//    debugDraw.SetFlags(0xFFFF);
+    DebugDraw debugDraw;
+    debugDraw.SetFlags(0xFFFF);
     //initial display
-//    World.SetDebugDraw(&debugDraw);
-    Ship ship(World);
+    World.SetDebugDraw(&debugDraw);
+/*NOSHIP*/    Ship ship(World);
+#ifndef DEBUG
     ship.Draw();
+#endif
+
     SDL_GL_SwapWindow(pWindow);
 
     setupWiiMote();
+//    setupWalls();
+
+/*
+    b2BodyDef boxBodyDef;
+    boxBodyDef.type=b2_dynamicBody;
+    boxBodyDef.position.Set(0.0f,0.0f);
+    b2Body* boxBody = World.CreateBody(&boxBodyDef);
+    b2PolygonShape boxShape;
+    boxShape.SetAsBox(.2f,.2f);
+    b2FixtureDef fixture;
+    fixture.shape = &boxShape;
+    boxBody->CreateFixture(&fixture);
+*/
 
 
-    setupWalls();
     //Box timing stuff
     float32 timeStep = 1.0f / 60.0f;
     int32 velocityIterations = 6;
@@ -114,12 +129,12 @@ int main(int argc, char *argv[])
                 }
                 case SDLK_d:
                 {
-                    ship.rotateRight();
+                    /*NOSHIP*/ ship.rotateRight();
                     break;
                 }
                 case SDLK_a:
                 {
-                    ship.rotateLeft();
+                    /*NOSHIP*/ ship.rotateLeft();
                     break;
                 }
                 case SDLK_w:
@@ -139,19 +154,19 @@ int main(int argc, char *argv[])
                 {
                     if(event.user.code & CWIID_BTN_UP)
                     {
-                        ship.translateLeft();
+                        /*NOSHIP*/ ship.translateLeft();
                     }
                     if(event.user.code & CWIID_BTN_DOWN)
                     {
-                        ship.translateRight();
+                        /*NOSHIP*/ ship.translateRight();
                     }
                     if(event.user.code & CWIID_BTN_RIGHT)
                     {
-                        ship.translateUp();
+                        /*NOSHIP*/ ship.translateUp();
                     }
                     if(event.user.code & CWIID_BTN_LEFT)
                     {
-                        ship.translateDown();
+                        /*NOSHIP*/ ship.translateDown();
                     }
                     if(event.user.code & CWIID_BTN_HOME)
                     {
@@ -159,11 +174,11 @@ int main(int argc, char *argv[])
                     }
                     if(event.user.code & CWIID_BTN_1)
                     {
-                        ship.rotateLeft();
+                        /*NOSHIP*/ ship.rotateLeft();
                     }
                     if(event.user.code & CWIID_BTN_2)
                     {
-                        ship.rotateRight();
+                        /*NOSHIP*/ ship.rotateRight();
                     }
 
                 }
@@ -171,11 +186,11 @@ int main(int argc, char *argv[])
                 {
                     if(event.user.code > 140)
                     {
-                        ship.rotateRight();
+                        /*NOSHIP*/ ship.rotateRight();
                     }
                     else if (event.user.code < 120)
                     {
-                        ship.rotateLeft();
+                        /*NOSHIP*/ ship.rotateLeft();
                     }
                 }
                 break;
@@ -186,9 +201,13 @@ int main(int argc, char *argv[])
         }
         World.Step(timeStep, velocityIterations, positionIterations);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        ship.Draw();
+#ifndef DEBUG
+        /*NOSHIP*/ ship.Draw();
+#else
+        World.DrawDebugData();
+#endif
         SDL_GL_SwapWindow(pWindow);
-//        World.DrawDebugData();
+
         SDL_Delay(100);
      
         //TGC
@@ -376,52 +395,35 @@ void setupWiiMote()
 
 void setupWalls()
 {
+    b2BodyDef bodyDef;
 
-    // Define the top edge body.
-    b2BodyDef topBodyDef;
-    topBodyDef.position.Set(-10.0f, 10.0f);
-    
-    // Call the body factory which allocates memory for the ground body
-    // from a pool and creates the ground box shape (also from a pool).
-    // The body is also added to the world.
-    b2Body* topBody = World.CreateBody(&topBodyDef);
+    //Top
+    bodyDef.position.Set(-5.0f, 5.0f);
+    b2Body* topBody = World.CreateBody(&bodyDef);
     b2EdgeShape topEdge;
     topEdge.Set(b2Vec2(0.0, 0.0), b2Vec2(20.0,0.0));
     topBody->CreateFixture(&topEdge, 0.0f);
-
-
-    // Define the left body.
-    // Call the body factory which allocates memory for the left body
-    // from a pool and creates the left box shape (also from a pool).
-    // The body is also added to the world.
-    b2Body* leftBody = World.CreateBody(&topBodyDef);
+    
+    
+    //left
+    bodyDef.position.Set(-5.0f, 0.0f);
+    b2Body* leftBody = World.CreateBody(&bodyDef);
     b2EdgeShape leftEdge;
     leftEdge.Set(b2Vec2(0.0f, 0.0f), b2Vec2(0.0f,20.0f));
     leftBody->CreateFixture(&leftEdge, 0.0f);
 
-    // Define the ground body.
-    b2BodyDef groundBodyDef;
-    groundBodyDef.position.Set(-10.0f, -10.0f);
-  
-    // Call the body factory which allocates memory for the ground body
-    // from a pool and creates the ground box shape (also from a pool).
-    // The body is also added to the world.
-    b2Body* groundBody = World.CreateBody(&groundBodyDef);
+    //bottom
+    bodyDef.position.Set(-5.0f, -5.0f);
+    b2Body* groundBody = World.CreateBody(&bodyDef);
     b2EdgeShape groundEdge;
     groundEdge.Set(b2Vec2(0.0f, 0.0f), b2Vec2(20.0f,0.0f));
     groundBody->CreateFixture(&groundEdge, 0.0f);
 
-
-    // Define the right body.
-    b2BodyDef rightBodyDef;
-    rightBodyDef.position.Set(10.0f, -10.0f);
-  
-    // Call the body factory which allocates memory for the right body
-    // from a pool and creates the right box shape (also from a pool).
-    // The body is also added to the world.
-    b2Body* rightBody = World.CreateBody(&rightBodyDef);
+    //right
+    bodyDef.position.Set(5.0f, 0.0f);
+    b2Body* rightBody = World.CreateBody(&bodyDef);
     b2EdgeShape rightEdge;
-    rightEdge.Set(b2Vec2(0.0f, 0.0f), b2Vec2(0.0f,10.0f));
+    rightEdge.Set(b2Vec2(0.0f, 0.0f), b2Vec2(0.0f,20.0f));
     rightBody->CreateFixture(&rightEdge, 0.0f);
 
 }
