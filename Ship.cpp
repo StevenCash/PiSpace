@@ -20,40 +20,58 @@ Ship::Ship(b2World& world):
 
     //Set up the object for Box2D
     m_bodyDef.type = b2_dynamicBody;
-    m_bodyDef.position.Set(5.0f,5.0f); //trying to start at the center
+    m_bodyDef.position.Set(0.0f,0.0f); //trying to start at the center
     m_pBody = m_worldRef.CreateBody(&m_bodyDef);
     b2PolygonShape shipShape;
 
     //define array of vertices for the ship shape
-    b2Vec2 boxShipVertices[4];
+    b2Vec2 boxShipVertices[3]; 
 
-    //Vertices definitions for use by both OpenGL and Box2D
-    TempStruct shipVertices[] =
-        {
-            {{ 0.0f, 0.5f, 0.0f,1.0f}, //0
-             {1.0, 1.0, 1.0, 1.0}},
-            {{-0.4f, -0.5f, 0.0f,1.0f}, //1
-             {0.0, 0.0, 1.0, 1.0}},
-            {{0.0f, 0.0f, 0.0f,1.0f}, //2
-             {0.0, 0.0, 1.0, 1.0}},
-            {{0.4f, -0.5, 0.0f,1.0f}, //3
-             {0.0, 0.0, 1.0, 1.0}}
-        };
+    boxShipVertices[0].x = 0.0f;
+    boxShipVertices[0].y = 0.5f;
 
-    for(int index=0; index < 4; ++index)
-    {
-        boxShipVertices[index].x = (shipVertices[index].vertices[0]);
-        boxShipVertices[index].y = (shipVertices[index].vertices[1]);
-    }
+    boxShipVertices[1].x = -0.4f;
+    boxShipVertices[1].y = -0.5f;
 
-    shipShape.Set(boxShipVertices, 4);
-
+    boxShipVertices[2].x = 0.0f;
+    boxShipVertices[2].y = 0.0f;
+    
+    shipShape.Set(boxShipVertices, 3);
+    
+    //Box only creates convex polygons for shapes,
+    //so 2 triangles to create the shape we want
     b2FixtureDef fixtureDef;
     fixtureDef.shape = &shipShape;
     fixtureDef.density = 1.0f;
     fixtureDef.friction = 0.3f;
     fixtureDef.restitution = 0.0f;
     m_pBody->CreateFixture(&fixtureDef);
+
+    
+    boxShipVertices[1].x = 0.4f;
+    boxShipVertices[1].y = -0.5f;
+    shipShape.Set(boxShipVertices, 3);
+    m_pBody->CreateFixture(&fixtureDef);
+
+
+    //Vertices definitions for use by OpenGL
+    //These are separate from Box coordinates, but 
+    //they completely line up with all of the external
+    //edges
+    TempStruct shipVertices[] =
+        {
+            {{ boxShipVertices[0].x,boxShipVertices[0].y, 0.0f,1.0f}, //0
+             {1.0, 1.0, 1.0, 1.0}},
+            {{-0.4f, -0.5f, 0.0f,1.0f}, //1  //overwrote this one in the array, so use it manually
+             {0.0, 0.0, 1.0, 1.0}},
+            {{boxShipVertices[2].x,boxShipVertices[2].y, 0.0f,1.0f}, //2
+             {0.0, 0.0, 1.0, 1.0}},
+            {{boxShipVertices[1].x,boxShipVertices[1].y, 0.0f,1.0f}, //3
+             {0.0, 0.0, 1.0, 1.0}}
+        };
+
+
+
 
 
     //TBD try/catch
@@ -105,17 +123,6 @@ Ship::Ship(b2World& world):
 void Ship::Draw()
 {
 
-    //Dump the projection matrix
-/*
-    for(int i=0;i<4;++i)
-    {
-        for(int j=0;j<4;++j)
-        {
-            std::cout << m_projMat[i][j] <<" ";
-        }
-        std::cout << std::endl;
-    }
-*/
      glUseProgram(m_shaderProgram);
 
      //get a handle for the rotation uniform;
@@ -132,7 +139,7 @@ void Ship::Draw()
      modelMatrix = 
          glm::translate(modelMatrix, glm::vec3(position.x, position.y, 0.0f)); 
      modelMatrix = 
-         glm::rotate(modelMatrix, angleDeg + 180.0f, m_rotateAxis);    
+         glm::rotate(modelMatrix, angleDeg , m_rotateAxis);    
 
      //skipping the view matrix, because we don't need it
      glm::mat4 mvpMat = m_projMat * modelMatrix;
@@ -200,10 +207,14 @@ void Ship::rotateLeft()
 
 }
 
+void Ship::stop()
+{
+    m_pBody->SetLinearVelocity(b2Vec2(0.0f,0.0f));
+}
+
 void Ship::translateUp()
 {
     m_pBody->SetLinearVelocity(b2Vec2(0.0f,8.0f));
-
 }
 
 void Ship::translateDown()

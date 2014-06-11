@@ -32,6 +32,7 @@ public:
     void translateDown();
     void translateRight();
     void translateLeft();
+    void stop();
 private:
     glm::mat4 m_projMat;
     glm::vec3 m_rotateAxis;
