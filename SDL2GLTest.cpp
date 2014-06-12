@@ -9,16 +9,16 @@
 //Wii stuff
 #include <bluetooth/bluetooth.h>
 #include <cwiid.h>
+#include "Wiimote.h"
 
 //Box 2D
 #include <Box2D/Box2D.h>
 #include "Ship.h"
 #include "DebugDraw.h"
 
-
 //function prototype
 void setupDisplay(int screenx=1920, int screeny=1080, int flags=0);
-void setupWiiMote();
+void setupWiimote(int index);
 void setupWalls();
 
 /* Wiimote Callback */
@@ -27,7 +27,7 @@ cwiid_mesg_callback_t cwiid_callback;
 //global variables to handle the SDL display
 SDL_Window *pWindow = 0;
 SDL_GLContext glContext;
-bdaddr_t bdaddr;
+
 
 //new event for SDL
 Uint32 wiiButtonEvent;
@@ -37,7 +37,7 @@ Uint32 wiiAccelEvent;
 //because the one in bluetooth.h is stupid
 const bdaddr_t kBdAddrAny = {{0, 0, 0, 0, 0, 0}};
 
-cwiid_wiimote_t *wiimote = NULL;
+cwiid_wiimote_t *wiimote[2] = {NULL,NULL};
 
 
 //World for use with Box2D with no gravity
@@ -50,13 +50,6 @@ b2World World(b2Vec2(0.0f,0.0f));
 
 int main(int argc, char *argv[])
 {
-    //bluetooth lookup stuff
-//    bool reset_bdaddr = false;
-//    if(bacmp(&bdaddr, &kBdAddrAny) == 0 )
-//    {
-//        reset_bdaddr = true;
-//    }
-
     if(argc > 1)
     {
         std::cout << argv[1] << std::endl;
@@ -83,7 +76,13 @@ int main(int argc, char *argv[])
 
     SDL_GL_SwapWindow(pWindow);
 
-    setupWiiMote();
+//    setupWiimote(0);
+//    if(argc > 1)
+//    {
+//        setupWiimote(1);
+//    }
+
+    Wiimote foo;
 
     setupWalls();
 
@@ -208,6 +207,7 @@ int main(int argc, char *argv[])
     SDL_GL_DeleteContext(glContext);
     SDL_DestroyWindow(pWindow);
     pWindow = 0;
+    cwiid_close(wiimote[0]);
     SDL_Quit();
     std::cout << "Finished" << std::endl;
 }
@@ -312,11 +312,23 @@ void cwiid_callback(
 
 
 /********************/
-void setupWiiMote()
+void setupWiimote(int index)
 {
+    //Use new Wiimote object to connect to wiimotes
+
+    {
+        
+        Wiimote foo;
+//        Wiimote bar;
+        SDL_Delay(30000);
+    }
+
+
+    bdaddr_t bdaddr = kBdAddrAny;
+
     std::cout << "Put wiimote into discovery mode (press 1+2)" << std::endl;
-    wiimote = cwiid_open(&bdaddr, CWIID_FLAG_MESG_IFC);
-    if(wiimote == NULL)
+    wiimote[index] = cwiid_open(&bdaddr, CWIID_FLAG_MESG_IFC);
+    if(wiimote[index] == NULL)
     {
         std::cerr << "No connection. Quitting" << std::endl;
         exit(1);
@@ -324,60 +336,19 @@ void setupWiiMote()
     else
     {
         std::cout << "Connected" << std::endl;
-        cwiid_command(wiimote, CWIID_CMD_LED, CWIID_LED1_ON);
+        cwiid_command(wiimote[index], CWIID_CMD_LED, CWIID_LED1_ON);
     }
 
 
-
-
-/*
-    int messageCount = 0;
-    cwiid_mesg *mesg[100];
-    timespec timeinfo;
-
-    if(cwiid_get_mesg(wiimote, &messageCount, mesg, &timeinfo))
-    {
-        std::cout << "Error reading message" << std::endl;
-    }
-    else
-    {
-        std::cout << "Got a message!" << std::endl;
-    }
-
-    if(cwiid_get_mesg(wiimote, &messageCount, mesg, &timeinfo))
-    {
-        std::cout << "Error reading message" << std::endl;
-    }
-    else
-    {
-        std::cout << "Got a message!" << std::endl;
-    }
-
-
-    std::cout << "Turning on LED 1" << std::endl;
-    cwiid_command(wiimote, CWIID_CMD_LED, CWIID_LED1_ON);
-    SDL_Delay(1000);
-
-    std::cout << "Turning off LED 1" << std::endl;
-    cwiid_command(wiimote, CWIID_CMD_LED, 0);
-    SDL_Delay(5000);
-
-    
-    
-    cwiid_close(wiimote);
-    std::cout << "exiting" << std::endl;
-    exit(0);
-*/
-    if (cwiid_set_mesg_callback(wiimote, &cwiid_callback))
+    if (cwiid_set_mesg_callback(wiimote[index], &cwiid_callback))
     {
         std::cerr << "Error setting callback.  Exitting" << std::endl;
-        cwiid_close(wiimote);
+        cwiid_close(wiimote[index]);
         exit(2);
     }
-    std::cout << "Commanding reporting BTN" << std::endl;
-    cwiid_command(wiimote, CWIID_CMD_RPT_MODE, CWIID_RPT_BTN);
 
-
+    std::cout << "WiiMote " << index << " connected" << std::endl;
+    cwiid_command(wiimote[index], CWIID_CMD_RPT_MODE, CWIID_RPT_BTN);
 }
 
 

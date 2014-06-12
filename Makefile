@@ -16,6 +16,7 @@ LIBRARIES=\
 
 CXX=g++
 OBJECTS=\
+Wiimote.o\
 SDL2GLTest.o\
 ShaderUtil.o\
 Ship.o\
