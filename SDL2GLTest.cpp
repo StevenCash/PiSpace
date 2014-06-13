@@ -29,9 +29,6 @@ SDL_GLContext glContext;
 Uint32 wiiButtonEvent;
 Uint32 wiiAccelEvent;
 
-cwiid_wiimote_t *wiimote[2] = {NULL,NULL};
-
-
 //World for use with Box2D with no gravity
 //positive 10.0 is up
 //negative 10.0 is down
