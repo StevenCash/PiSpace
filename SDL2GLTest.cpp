@@ -18,11 +18,7 @@
 
 //function prototype
 void setupDisplay(int screenx=1920, int screeny=1080, int flags=0);
-void setupWiimote(int index);
 void setupWalls();
-
-/* Wiimote Callback */
-cwiid_mesg_callback_t cwiid_callback;
 
 //global variables to handle the SDL display
 SDL_Window *pWindow = 0;
@@ -32,10 +28,6 @@ SDL_GLContext glContext;
 //new event for SDL
 Uint32 wiiButtonEvent;
 Uint32 wiiAccelEvent;
-
-//setup a constant for the equivalent of BD_ADDR_ANY
-//because the one in bluetooth.h is stupid
-const bdaddr_t kBdAddrAny = {{0, 0, 0, 0, 0, 0}};
 
 cwiid_wiimote_t *wiimote[2] = {NULL,NULL};
 
@@ -70,19 +62,8 @@ int main(int argc, char *argv[])
     //initial display
     World.SetDebugDraw(&debugDraw);
 /*NOSHIP*/    Ship ship(World);
-#ifndef DEBUG
-    ship.Draw();
-#endif
 
     SDL_GL_SwapWindow(pWindow);
-
-//    setupWiimote(0);
-//    if(argc > 1)
-//    {
-//        setupWiimote(1);
-//    }
-
-    Wiimote foo;
 
     setupWalls();
 
@@ -198,7 +179,6 @@ int main(int argc, char *argv[])
 #endif
         SDL_GL_SwapWindow(pWindow);
         SDL_Delay(100);
-        
     }
     
 
@@ -207,7 +187,6 @@ int main(int argc, char *argv[])
     SDL_GL_DeleteContext(glContext);
     SDL_DestroyWindow(pWindow);
     pWindow = 0;
-    cwiid_close(wiimote[0]);
     SDL_Quit();
     std::cout << "Finished" << std::endl;
 }
@@ -260,96 +239,6 @@ void setupDisplay(int screenx, int screeny, int flags)
 
 }
 
-
-
-void cwiid_callback(
-    cwiid_wiimote_t *wiimote, 
-    int mesg_count,
-    union cwiid_mesg mesg_array[], 
-    struct timespec *timestamp)
-{
-    for (int i=0; i < mesg_count; ++i) 
-    {
-        switch (mesg_array[i].type) 
-        {
-	case CWIID_MESG_BTN:
-        {
-            //create a new SDL event with the button state
-            SDL_Event event;
-            SDL_zero(event);
-            event.type = SDL_USEREVENT; 
-            event.user.type = wiiButtonEvent;
-            event.user.code = mesg_array[i].btn_mesg.buttons;
-            SDL_PushEvent(&event);
-            break;
-        }
-        case CWIID_MESG_ACC:
-        {
-#ifdef WII_ACC
-            //Y Axis is good for holding the remote sideways and rotating
-            std::cout << (int) mesg_array[i].acc_mesg.acc[CWIID_Y] << std::endl;
-            //Seems to rang from 105 to about 155 (as int)
-
-            //only add event if there isn't currently an accel event on the
-            //queue
-            
-            std::cout << (int) mesg_array[i].acc_mesg.acc[CWIID_Y] << std::endl;
-            SDL_Event event;
-            SDL_zero(event);
-            event.type = SDL_USEREVENT; 
-            event.user.type = wiiAccelEvent;
-            event.user.code = mesg_array[i].acc_mesg.acc[CWIID_Y];
-            SDL_PushEvent(&event);
-#endif
-            break;
-        }
-        default:
-            //do nothing
-            break;
-        }
-    }
-}
-
-
-/********************/
-void setupWiimote(int index)
-{
-    //Use new Wiimote object to connect to wiimotes
-
-    {
-        
-        Wiimote foo;
-//        Wiimote bar;
-        SDL_Delay(30000);
-    }
-
-
-    bdaddr_t bdaddr = kBdAddrAny;
-
-    std::cout << "Put wiimote into discovery mode (press 1+2)" << std::endl;
-    wiimote[index] = cwiid_open(&bdaddr, CWIID_FLAG_MESG_IFC);
-    if(wiimote[index] == NULL)
-    {
-        std::cerr << "No connection. Quitting" << std::endl;
-        exit(1);
-    }
-    else
-    {
-        std::cout << "Connected" << std::endl;
-        cwiid_command(wiimote[index], CWIID_CMD_LED, CWIID_LED1_ON);
-    }
-
-
-    if (cwiid_set_mesg_callback(wiimote[index], &cwiid_callback))
-    {
-        std::cerr << "Error setting callback.  Exitting" << std::endl;
-        cwiid_close(wiimote[index]);
-        exit(2);
-    }
-
-    std::cout << "WiiMote " << index << " connected" << std::endl;
-    cwiid_command(wiimote[index], CWIID_CMD_RPT_MODE, CWIID_RPT_BTN);
-}
 
 
 void setupWalls()
