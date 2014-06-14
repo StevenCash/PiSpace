@@ -21,6 +21,8 @@ SDL2GLTest.o\
 ShaderUtil.o\
 Ship.o\
 GenericDrawing.o \
+EventHandler.o \
+
 
 DEBUGFLAGS=-DDEBUG
 

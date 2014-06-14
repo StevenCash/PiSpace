@@ -4,7 +4,7 @@
 #include <SDL2/SDL_opengles2.h> 
 #include <Box2D/Box2D.h>
 #include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
-#include "Wiimote.h"
+#include <vector>
 
 #define GL2BOX(x) (((x)*5.0f)+5.0f)
 #define BOX2GL(x) (((x)-5.0f)/5.0f)
@@ -60,7 +60,8 @@ private:
     //should destroy this body in the destructor
     b2Body *m_pBody;
 
-    Wiimote controller;
 };
+
+typedef std::vector<Ship> Ships;
 
 #endif //SHIP_H
