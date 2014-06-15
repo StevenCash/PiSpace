@@ -17,7 +17,7 @@ LIBRARIES=\
 CXX=g++
 OBJECTS=\
 Wiimote.o\
-SDL2GLTest.o\
+Space.o\
 ShaderUtil.o\
 Ship.o\
 GenericDrawing.o \
@@ -26,7 +26,7 @@ EventHandler.o \
 
 DEBUGFLAGS=-DDEBUG
 
-TARGET=sdl2gl
+TARGET=space
 
 %.o: %.cpp Makefile
 	${CXX} ${DEBUGFLAGS} -W -Wall -c ${INCLUDE} $< -o $@

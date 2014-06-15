@@ -8,14 +8,16 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
 
-
+//Setup statics
 int Ship::index = 0;
 const glm::mat4 Ship::m_projMat(glm::ortho(-10.0f,10.0f,-10.0f,10.0f));
+GLuint Ship::m_shaderProgram = 0;
+
+
 
 Ship::Ship(b2World& world):
     m_rotateAxis(glm::vec3(0.0f,0.0f,1.0f)),
     m_angle(0.0f),
-    m_forward(0.0,-1.0f),
     m_worldRef(world),
     m_index(index++)
 {
@@ -57,7 +59,41 @@ Ship::Ship(b2World& world):
     shipShape.Set(boxShipVertices, 3);
     m_pBody->CreateFixture(&fixtureDef);
 
+//Base the color of this ship on the index
+    GLfloat blue = 0.0f;
+    GLfloat red = 0.0f;
+    GLfloat green = 0.0f;
 
+    switch(m_index)
+    {
+    case 0:
+    {
+        blue = 1.0f;
+        break;
+    }
+    case 1:
+    {
+        red = 1.0f;
+        break;
+    }
+    case 2:
+    {
+        green = 1.0f;
+        break;
+    }
+    case 3:
+    {
+        red = 1.0f;
+        green = 1.0f;
+        break;
+    }
+    default:
+    {
+        std::cerr << "Too many ships." << std::endl;
+        break;
+        exit(1);
+    }
+    }
     //Vertices definitions for use by OpenGL
     //These are separate from Box coordinates, but 
     //they completely line up with all of the external
@@ -67,30 +103,28 @@ Ship::Ship(b2World& world):
             {{ boxShipVertices[0].x,boxShipVertices[0].y, 0.0f,1.0f}, //0
              {1.0, 1.0, 1.0, 1.0}},
             {{-0.4f, -0.5f, 0.0f,1.0f}, //1  //overwrote this one in the array, so use it manually
-             {0.0, 0.0, 1.0, 1.0}},
+             {red, green, blue, 1.0}},
             {{boxShipVertices[2].x,boxShipVertices[2].y, 0.0f,1.0f}, //2
-             {0.0, 0.0, 1.0, 1.0}},
+             {red, green, blue, 1.0}},
             {{boxShipVertices[1].x,boxShipVertices[1].y, 0.0f,1.0f}, //3
-             {0.0, 0.0, 1.0, 1.0}}
+             {red, green, blue, 1.0}}
         };
 
-
-
-
-
-    //TBD try/catch
-    //Load and compile the shaders
-    ShaderList_T shaderList;
-    shaderList.push_back(createShaderFromFile(GL_VERTEX_SHADER, "ShipVertex.glsl"));
-    shaderList.push_back(createShaderFromFile(GL_FRAGMENT_SHADER, "ShipFragment.glsl"));
-
-    m_shaderProgram = createShaderProgram(shaderList);
+    if(!m_shaderProgram)
+    {
+        //TBD try/catch
+        //Load and compile the shaders
+        ShaderList_T shaderList;
+        shaderList.push_back(createShaderFromFile(GL_VERTEX_SHADER, "ShipVertex.glsl"));
+        shaderList.push_back(createShaderFromFile(GL_FRAGMENT_SHADER, "ShipFragment.glsl"));
+        
+        m_shaderProgram = createShaderProgram(shaderList);
     
-    //done with the shaders, so delete them
-    //do this here instead of in createShaderProgram so that a shader
-    //can be reused without rebuilding it
-    std::for_each(shaderList.begin(), shaderList.end(), glDeleteShader);
- 
+        //done with the shaders, so delete them
+        //do this here instead of in createShaderProgram so that a shader
+        //can be reused without rebuilding it
+        std::for_each(shaderList.begin(), shaderList.end(), glDeleteShader);
+    }
     //Setup the vertex buffers.  Should this be its own function?
     //glGenBuffers(Number of buffers to allocate, array to put buffer handlers into);
     glGenBuffers(1, m_vertexBufferHandleArray);
@@ -190,9 +224,8 @@ void Ship::Forward()
 {
     b2Transform xf = m_pBody->GetTransform();
     xf.p.SetZero();
-    b2Vec2 force = b2Mul(xf,b2Vec2(0.0f, 1.0f));
+    b2Vec2 force = b2Mul(xf,b2Vec2(0.0f, 30.0f));
     m_pBody->ApplyForceToCenter(force,true);
-    std::cout << force.x << " " << force.y << std::endl;
 }
 
 #define MAX_ANGULAR_VEL 10.0f

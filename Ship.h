@@ -45,15 +45,12 @@ private:
     GLuint m_vertexBufferHandleArray[1];    
     GLuint m_colorBufferHandleArray[1];    
 
-    GLuint m_shaderProgram;
+    static GLuint m_shaderProgram;
     GLuint m_indexBuffer;
     GLuint m_numIndices;
     GLfloat m_angle;
 
     //Box2D parameters
-    //vector that should always point "forward"
-    //for use with a "thrust"
-    b2Vec2 m_forward;
 
     //reference to the world to use for Box
     b2World& m_worldRef;
