@@ -23,10 +23,30 @@ Ship::Ship(b2World& world):
 {
 
     //calculate a start position
-    float startX = -5.0f * (m_index*-1);
+    float startX = 0.0f;
+    float startY = 0.0f;
+
+    switch(m_index)
+    {
+    case 0:
+        startX = -5.0f;
+        break;
+    case 1:
+        startX = 5.0f;
+        break;
+    case 2:
+        startY = 5.0f;
+        break;
+    case 3:
+        startY = -5.0f;
+        break;
+    default:
+        std::cerr << "index out of range" << std::endl;
+        break;
+    }
     //Set up the object for Box2D
     m_bodyDef.type = b2_dynamicBody;
-    m_bodyDef.position.Set(startX,0.0f); //trying to start at the center
+    m_bodyDef.position.Set(startX,startY); //trying to start at the center
     m_pBody = m_worldRef.CreateBody(&m_bodyDef);
     b2PolygonShape shipShape;
 
