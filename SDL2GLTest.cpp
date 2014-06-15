@@ -22,6 +22,7 @@ void setupWalls(b2World& world);
 
 int main(int argc, char *argv[])
 {
+    std::cout << "Num arguments: " << argc << std::endl;
     if(argc > 1)
     {
         std::cout << argv[1] << std::endl;
@@ -55,11 +56,11 @@ int main(int argc, char *argv[])
     Ships shipVector;
     Ship ship(World);
     shipVector.push_back(&ship);
-    Ship ship2(World);
-    shipVector.push_back(&ship2);
+//    Ship ship2(World);
+//    shipVector.push_back(&ship2);
     EventHandler eventHandler(pWindow,World,shipVector);
     Wiimote player1Control(&eventHandler);
-    Wiimote player2Control(&eventHandler);
+//    Wiimote player2Control(&eventHandler);
 
     //Put some boundries on the world
     setupWalls(World);

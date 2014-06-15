@@ -48,7 +48,7 @@ Ship::Ship(b2World& world):
     fixtureDef.shape = &shipShape;
     fixtureDef.density = 1.0f;
     fixtureDef.friction = 0.3f;
-    fixtureDef.restitution = 0.0f;
+    fixtureDef.restitution = 0.5f;
     m_pBody->CreateFixture(&fixtureDef);
 
     
@@ -185,8 +185,14 @@ void Ship::Draw()
 Ship::~Ship()
 {
 }
+
 void Ship::Forward()
 {
+    b2Transform xf = m_pBody->GetTransform();
+    xf.p.SetZero();
+    b2Vec2 force = b2Mul(xf,b2Vec2(0.0f, 1.0f));
+    m_pBody->ApplyForceToCenter(force,true);
+    std::cout << force.x << " " << force.y << std::endl;
 }
 
 #define MAX_ANGULAR_VEL 10.0f
