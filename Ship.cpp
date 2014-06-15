@@ -9,18 +9,22 @@
 #include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
 
 
+int Ship::index = 0;
+const glm::mat4 Ship::m_projMat(glm::ortho(-10.0f,10.0f,-10.0f,10.0f));
+
 Ship::Ship(b2World& world):
-    m_projMat(glm::ortho(-10.0f,10.0f,-10.0f,10.0f)),
     m_rotateAxis(glm::vec3(0.0f,0.0f,1.0f)),
     m_angle(0.0f),
     m_forward(0.0,-1.0f),
-    m_worldRef(world)
-
+    m_worldRef(world),
+    m_index(index++)
 {
 
+    //calculate a start position
+    float startX = -5.0f * (m_index*-1);
     //Set up the object for Box2D
     m_bodyDef.type = b2_dynamicBody;
-    m_bodyDef.position.Set(0.0f,0.0f); //trying to start at the center
+    m_bodyDef.position.Set(startX,0.0f); //trying to start at the center
     m_pBody = m_worldRef.CreateBody(&m_bodyDef);
     b2PolygonShape shipShape;
 
@@ -181,9 +185,12 @@ void Ship::Draw()
 Ship::~Ship()
 {
 }
+void Ship::Forward()
+{
+}
 
 #define MAX_ANGULAR_VEL 10.0f
-void Ship::rotateRight()
+void Ship::RotateCCW()
 {
     m_angle += 2.0f;
     if(m_angle > MAX_ANGULAR_VEL)
@@ -194,7 +201,7 @@ void Ship::rotateRight()
     m_pBody->SetAngularVelocity(m_angle);
 }
 
-void Ship::rotateLeft()
+void Ship::RotateCW()
 {
 
     m_angle -= 2.0f;
@@ -233,13 +240,4 @@ void Ship::translateLeft()
 {
     m_pBody->SetLinearVelocity(b2Vec2(-8.0f,0.0f));
 
-}
-
-void Ship::Status()
-{
-    std::cout << "Status: " 
-              << m_pBody->GetWorldCenter().x 
-              << " " 
-              << m_pBody->GetWorldCenter().y 
-              << std::endl;
 }

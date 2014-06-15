@@ -6,13 +6,15 @@
 #include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
 #include <vector>
 
+#include "ShipIntf.h"
+
 #define GL2BOX(x) (((x)*5.0f)+5.0f)
 #define BOX2GL(x) (((x)-5.0f)/5.0f)
 
 #define DEG2RAD(x) ((x) * 0.0174532925f)
 #define RAD2DEG(x) ((x) * 57.2957795f)
 
-class Ship
+class Ship : public ShipIntf
 {
     struct TempStruct
     {
@@ -26,16 +28,17 @@ public:
     ~Ship();
     //The function that actually puts the object on the screen
     void Draw();
-    void Status();
-    void rotateRight();
-    void rotateLeft();
+    void RotateCW();
+    void RotateCCW();
+    void Forward();
+
     void translateUp();
     void translateDown();
     void translateRight();
     void translateLeft();
     void stop();
 private:
-    glm::mat4 m_projMat;
+    static const glm::mat4 m_projMat;
     glm::vec3 m_rotateAxis;
 
     //only using 1 vertex buffer for this object
@@ -60,8 +63,10 @@ private:
     //should destroy this body in the destructor
     b2Body *m_pBody;
 
-};
+    //ship creation stuff
+    int m_index;
+    static int index;
 
-typedef std::vector<Ship> Ships;
+};
 
 #endif //SHIP_H
