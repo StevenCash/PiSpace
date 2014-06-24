@@ -40,40 +40,7 @@ void EventHandler::EventLoop()
             {
                 //All of the user event types should have a ship pointer
                 ShipIntf *pShip = reinterpret_cast<ShipIntf*>(event.user.data1);
-                
-                switch(event.user.code)
-                {
-                case CONTROL_TURN_CCW:
-                {
-                    pShip->RotateCCW();
-                    break;
-                }
-                case CONTROL_TURN_CW:
-                {
-                    pShip->RotateCW();
-                    break;
-                }
-                case CONTROL_FORWARD:
-                {
-                    pShip->Forward();
-                    break;
-                }
-                case CONTROL_FIRE_1:
-                {
-                    break;
-                }
-                case CONTROL_FIRE_2:
-                {
-                    break;
-                }
-                default:
-                {
-                    break;
-                }
-                } //switch(event.user.code)
-
-                
-
+                pShip->ProcessInput(event.user.code);
                 break;
             }                    
             default:
@@ -94,47 +61,13 @@ EventHandler::~EventHandler()
 {
 };
     
-//Accessor functions to add events to the event handler
-void EventHandler::TurnCW(int controllerIndex)
-{
-    m_templateEvent.user.code = CONTROL_TURN_CW;
-    m_templateEvent.user.data1 = m_ships[controllerIndex];
-    SDL_PushEvent(&m_templateEvent);
-}
 
-void EventHandler::TurnCCW(int controllerIndex)
-{
-    m_templateEvent.user.code = CONTROL_TURN_CCW;
-    m_templateEvent.user.data1 = m_ships[controllerIndex];
-    SDL_PushEvent(&m_templateEvent);
-}
-
-void EventHandler::Forward(int controllerIndex)
-{
-    m_templateEvent.user.code = CONTROL_FORWARD;
-    m_templateEvent.user.data1 = m_ships[controllerIndex];
-    SDL_PushEvent(&m_templateEvent);
-}
-
-void EventHandler::Fire_1(int controllerIndex)
-{
-    m_templateEvent.user.code = CONTROL_FIRE_1;
-    m_templateEvent.user.data1 = m_ships[controllerIndex];
-    SDL_PushEvent(&m_templateEvent);
-}
-
-void EventHandler::Fire_2(int controllerIndex)
-{
-    m_templateEvent.user.code = CONTROL_FIRE_2;
-    m_templateEvent.user.data1 = m_ships[controllerIndex];
-    SDL_PushEvent(&m_templateEvent);
-}
-
-void EventHandler::Quit()
+void EventHandler::Button_Home(int  /* controllerIndex */)
 {
     m_templateEvent.type = SDL_QUIT;
     SDL_PushEvent(&m_templateEvent);
 }
+
 
 
 void EventHandler::DrawShips() const
@@ -148,6 +81,7 @@ void EventHandler::DrawShips() const
         iter != endIter;
         ++iter)
     {
+        (*iter)->DoCommands();
         (*iter)->Draw();
     }
     SDL_GL_SwapWindow(m_pWindow);
@@ -156,3 +90,9 @@ void EventHandler::DrawShips() const
 
 
     
+void EventHandler::ButtonPushed(int controller, int buttons)
+{
+    m_templateEvent.user.code = buttons;
+    m_templateEvent.user.data1 = m_ships[controller];
+    SDL_PushEvent(&m_templateEvent);
+}

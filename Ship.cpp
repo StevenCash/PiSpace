@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <iostream>
 
+#include <cwiid.h>
+
 #include "Ship.h"
 #include "ShaderUtil.h"
 #include <glm/gtc/type_ptr.hpp>
@@ -19,7 +21,10 @@ Ship::Ship(b2World& world):
     m_rotateAxis(glm::vec3(0.0f,0.0f,1.0f)),
     m_angle(0.0f),
     m_worldRef(world),
-    m_index(index++)
+    m_index(index++),
+    m_bForceCCW(false),
+    m_bForceCW(false),
+    m_bForceForward(false)
 {
 
     //calculate a start position
@@ -89,6 +94,8 @@ Ship::Ship(b2World& world):
     case 0:
     {
         blue = 1.0f;
+        green = 0.0f;
+        red = 0.7f;
         break;
     }
     case 1:
@@ -103,8 +110,7 @@ Ship::Ship(b2World& world):
     }
     case 3:
     {
-        red = 1.0f;
-        green = 1.0f;
+        blue = 1.0f;
         break;
     }
     default:
@@ -240,63 +246,40 @@ Ship::~Ship()
 {
 }
 
-void Ship::Forward()
-{
-    b2Transform xf = m_pBody->GetTransform();
-    xf.p.SetZero();
-    b2Vec2 force = b2Mul(xf,b2Vec2(0.0f, 30.0f));
-    m_pBody->ApplyForceToCenter(force,true);
-}
-
-#define MAX_ANGULAR_VEL 10.0f
-void Ship::RotateCCW()
-{
-    m_angle += 2.0f;
-    if(m_angle > MAX_ANGULAR_VEL)
-    {
-        m_angle = MAX_ANGULAR_VEL;
-    }
-
-    m_pBody->SetAngularVelocity(m_angle);
-}
-
-void Ship::RotateCW()
-{
-
-    m_angle -= 2.0f;
-    if(m_angle < -MAX_ANGULAR_VEL)
-    {
-        m_angle = -MAX_ANGULAR_VEL;
-    }
-    
-    m_pBody->SetAngularVelocity(m_angle);
-
-}
-
 void Ship::stop()
 {
     m_pBody->SetLinearVelocity(b2Vec2(0.0f,0.0f));
 }
 
-void Ship::translateUp()
+
+void Ship::ProcessInput(int commands)
 {
-    m_pBody->SetLinearVelocity(b2Vec2(0.0f,8.0f));
+    //For now, use the constants from CWIID
+    m_bForceCCW = (commands & CWIID_BTN_UP);
+    m_bForceCW = (commands & CWIID_BTN_DOWN);
+    m_bForceForward = (commands & CWIID_BTN_2);
 }
 
-void Ship::translateDown()
+
+
+void Ship::DoCommands()
 {
-    m_pBody->SetLinearVelocity(b2Vec2(0.0f,-8.0f));
+    
+    b2Transform xf = m_pBody->GetTransform();
+    if(m_bForceForward)
+    {
+        xf.p.SetZero();
+        b2Vec2 force = b2Mul(xf,b2Vec2(0.0f, 10.0f));
+        m_pBody->ApplyForceToCenter(force,true);
+    }
 
-}
-
-void Ship::translateRight()
-{
-    m_pBody->SetLinearVelocity(b2Vec2(8.0f,0.0f));
-
-}
-
-void Ship::translateLeft()
-{
-    m_pBody->SetLinearVelocity(b2Vec2(-8.0f,0.0f));
+    if(m_bForceCW)
+    {
+        m_pBody->ApplyTorque(-1.0f, true);
+    }
+    else if(m_bForceCCW)
+    {
+        m_pBody->ApplyTorque(1.0f, true);
+    }
 
 }

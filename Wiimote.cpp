@@ -2,7 +2,7 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 
-#include "EventHandlerIntf.h"
+#include "WiimoteIntf.h"
 
 int Wiimote::index = 0;
 WiimoteMap Wiimote::m_wiimoteMap;
@@ -12,8 +12,8 @@ WiimoteMap Wiimote::m_wiimoteMap;
 const bdaddr_t Wiimote::kBdAddrAny = {{0, 0, 0, 0, 0, 0}};
 
 
-Wiimote::Wiimote(EventHandlerIntf *eventHandler)
-    :m_eventHandler(eventHandler),
+Wiimote::Wiimote(WiimoteIntf *wiimoteHandler)
+    :m_wiimoteHandler(wiimoteHandler),
      m_pWiimote(NULL),
      m_index(index++),
      m_bdaddr(kBdAddrAny)
@@ -60,38 +60,10 @@ void Wiimote::WiimoteCallback(
 	case CWIID_MESG_BTN:
         {
             Uint32 buttons = mesg_array[i].btn_mesg.buttons;
-
-            if(buttons & CWIID_BTN_UP)
-            {
-                m_eventHandler->TurnCCW(m_index);
-            }
-            if(buttons & CWIID_BTN_DOWN)
-            {
-                m_eventHandler->TurnCW(m_index);
-            }
-            if(buttons & CWIID_BTN_RIGHT)
-            {
-                m_eventHandler->Forward(m_index);
-            }
-
-            if(buttons & CWIID_BTN_LEFT)
-            {
-            }
+            m_wiimoteHandler->ButtonPushed(m_index,buttons);
             if(buttons & CWIID_BTN_HOME)
             {
-                m_eventHandler->Quit();
-            }
-            if(buttons & CWIID_BTN_1)
-            {
-
-            }
-            if(buttons & CWIID_BTN_2)
-            {
-
-            }
-            if(buttons & CWIID_BTN_PLUS)
-            {
-
+                m_wiimoteHandler->Button_Home(m_index);
             }
             break;
         }

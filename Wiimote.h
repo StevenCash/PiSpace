@@ -7,7 +7,7 @@
 #include "ControllerIntf.h"
 
 
-class EventHandlerIntf;
+class WiimoteIntf;
 
 typedef enum
 {
@@ -25,7 +25,7 @@ class Wiimote : public ControllerIntf
 public:
     //constructor.  Starts the connection to a wiimote.
     //throw some exception if it fails
-    explicit Wiimote(EventHandlerIntf *eventHandler);
+    explicit Wiimote(WiimoteIntf *wiimoteHandler);
 
     //disconnect the wiimote from this object
     ~Wiimote();
@@ -36,7 +36,7 @@ public:
         struct timespec *timestamp);
 
 private:
-    EventHandlerIntf *m_eventHandler;
+    WiimoteIntf *m_wiimoteHandler;
 //setup a constant for the equivalent of BD_ADDR_ANY
 //because the one in bluetooth.h is stupid
     static const bdaddr_t kBdAddrAny;

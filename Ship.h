@@ -26,16 +26,17 @@ public:
     //Default constructor
     Ship(b2World& world);
     ~Ship();
+
     //The function that actually puts the object on the screen
     void Draw();
-    void RotateCW();
-    void RotateCCW();
-    void Forward();
 
-    void translateUp();
-    void translateDown();
-    void translateRight();
-    void translateLeft();
+    //called every frame before drawing to do whatever was commanded
+    //in ProcessInput()
+    void DoCommands();
+    
+    //turn a bit mapped field into a set of commands to be handled
+    //during DoCommands
+    void ProcessInput(int commands);
     void stop();
 private:
     static const glm::mat4 m_projMat;
@@ -63,6 +64,12 @@ private:
     //ship creation stuff
     int m_index;
     static int index;
+
+
+    //Flags to indicate button states
+    bool m_bForceCCW; //left
+    bool m_bForceCW; //right
+    bool m_bForceForward; // Forward thrust
 
 };
 
