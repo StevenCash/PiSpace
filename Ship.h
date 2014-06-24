@@ -8,10 +8,6 @@
 
 #include "ShipIntf.h"
 
-#define GL2BOX(x) (((x)*5.0f)+5.0f)
-#define BOX2GL(x) (((x)-5.0f)/5.0f)
-
-#define DEG2RAD(x) ((x) * 0.0174532925f)
 #define RAD2DEG(x) ((x) * 57.2957795f)
 
 class Ship : public ShipIntf
@@ -55,8 +51,6 @@ private:
 
     //reference to the world to use for Box
     b2World& m_worldRef;
-
-    b2BodyDef m_bodyDef;
     
     //should destroy this body in the destructor
     b2Body *m_pBody;

@@ -50,9 +50,10 @@ Ship::Ship(b2World& world):
         break;
     }
     //Set up the object for Box2D
-    m_bodyDef.type = b2_dynamicBody;
-    m_bodyDef.position.Set(startX,startY); //trying to start at the center
-    m_pBody = m_worldRef.CreateBody(&m_bodyDef);
+    b2BodyDef bodyDef;
+    bodyDef.type = b2_dynamicBody;
+    bodyDef.position.Set(startX,startY); //trying to start at the center
+    m_pBody = m_worldRef.CreateBody(&bodyDef);
     b2PolygonShape shipShape;
 
     //define array of vertices for the ship shape
@@ -244,6 +245,7 @@ void Ship::Draw()
 //Destructor
 Ship::~Ship()
 {
+    m_worldRef.DestroyBody(m_pBody);
 }
 
 void Ship::stop()
