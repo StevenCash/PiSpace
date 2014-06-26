@@ -15,8 +15,6 @@ int Ship::index = 0;
 const glm::mat4 Ship::m_projMat(glm::ortho(-10.0f,10.0f,-10.0f,10.0f));
 GLuint Ship::m_shaderProgram = 0;
 
-
-
 Ship::Ship(b2World& world):
     m_rotateAxis(glm::vec3(0.0f,0.0f,1.0f)),
     m_angle(0.0f),
@@ -24,7 +22,9 @@ Ship::Ship(b2World& world):
     m_index(index++),
     m_bForceCCW(false),
     m_bForceCW(false),
-    m_bForceForward(false)
+    m_bForceForward(false),
+    m_bullet(world)
+
 {
 
     //calculate a start position
@@ -239,6 +239,7 @@ void Ship::Draw()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glUseProgram(0);
 
+    m_bullet.Draw();
 }
 
 
@@ -260,6 +261,11 @@ void Ship::ProcessInput(int commands)
     m_bForceCCW = (commands & CWIID_BTN_UP);
     m_bForceCW = (commands & CWIID_BTN_DOWN);
     m_bForceForward = (commands & CWIID_BTN_2);
+
+    if(commands & CWIID_BTN_A)
+    {
+        m_bullet.Fire(m_pBody->GetTransform());
+    }
 }
 
 

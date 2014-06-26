@@ -22,7 +22,7 @@ ShaderUtil.o\
 Ship.o\
 GenericDrawing.o \
 EventHandler.o \
-
+Bullet.o \
 
 DEBUGFLAGS=-DDEBUG
 

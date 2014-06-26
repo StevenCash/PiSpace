@@ -5,7 +5,7 @@
 #include <Box2D/Box2D.h>
 #include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
 #include <vector>
-
+#include "Bullet.h"
 #include "ShipIntf.h"
 
 #define RAD2DEG(x) ((x) * 57.2957795f)
@@ -65,6 +65,8 @@ private:
     bool m_bForceCW; //right
     bool m_bForceForward; // Forward thrust
 
+
+    Bullet m_bullet;
 };
 
 #endif //SHIP_H
