@@ -5,14 +5,17 @@
 #include <math.h>
 #include <iostream>
 
-const glm::mat4 Bullet::m_projMat(glm::ortho(-10.0f,10.0f,-10.0f,10.0f));
+//const glm::mat4 Bullet::m_projMat(glm::ortho(-10.0f,10.0f,-10.0f,10.0f));
+const glm::mat4 Bullet::m_projMat(glm::ortho(-1.0f,1.0f,-1.0f,1.0f));
 GLuint Bullet::m_shaderProgram = 0;
 
 Bullet::Bullet(b2World& world):
   m_pBody(0),
   m_world(world),
-  m_radius(0.1f)
+  m_radius(5.0f),
+  m_rotateAxis(glm::vec3(0.0f,0.0f,1.0f))
 {
+#ifdef DAMMIT
   b2BodyDef bulletBodyDef;
   bulletBodyDef.bullet = true;
   bulletBodyDef.active = false;
@@ -29,26 +32,40 @@ Bullet::Bullet(b2World& world):
 
   m_pBody->CreateFixture(&bulletFixture);
 
-  int numTangents = 17;
-  int numFields = 4 * numTangents;
+  b2Vec2 bodyPosition = m_pBody->GetWorldCenter();
+#endif
+
+  int numTangents = 16;
+  int numFields = 4 * (numTangents+1+1);  //plus centerpoint and the final connection point
+
   //Setup the data for OpenGL rendering
   GLfloat vertices[numFields]; //one center point, 16 on the circle
-  
-  b2Vec2 bodyPosition = m_pBody->GetWorldCenter();
-  vertices[0] = bodyPosition.x;
-  vertices[1] = bodyPosition.y;
+
+  vertices[0] = 0.0;//bodyPosition.x;
+  vertices[1] = 0.0;//bodyPosition.y;
   vertices[2] = 0.0f;
   vertices[3] = 1.0f;
   
-//  6.28/16 *i/4
-  for(int i = 4; i < numFields; i+=4)
+  float angleBase = 2.0f * 3.14159265f / numTangents;
+
+  for(int j = 0; j < numTangents; ++j)
   {
-      vertices[i] = m_radius * sinf(6.28f/16.0f*i/4.0f) + bodyPosition.x;
-      vertices[i+1] = m_radius * cosf(6.28f/16.0f*i/4.0f) + bodyPosition.y;
-      vertices[i+2] = 0.0f;
-      vertices[i+3] = 1.0f;
+      int index = (j+1)*4;
+      vertices[index] = m_radius * sinf(angleBase * j) + vertices[0];
+      vertices[index+1] = m_radius * cosf(angleBase * j) + vertices[1];
+      vertices[index+2] = 0.0f;
+      vertices[index+3] = 1.0f;
   }
 
+  //make the last point on the circle match up with the first point
+  int index = numTangents * 4;
+  vertices[index] = vertices[4];
+  vertices[index+1] = vertices[5];
+  vertices[index+2] = vertices[6];
+  vertices[index+3] = vertices[7];
+  
+
+    
   if(!m_shaderProgram)
   {
       //TBD try/catch
@@ -73,25 +90,23 @@ Bullet::Bullet(b2World& world):
   //copy the data into it
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
-  
+
   //array to give the order of the vertices to draw
-  GLubyte tmpIndices[] =
-      {
-          //front
-          0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
-          
-      };
+  GLubyte tmpIndices[numTangents+2];
+  for(int i=0;i < numTangents+2; ++i)
+  {
+      tmpIndices[i] = i;
+  }
   
   //store the number of indices in the index buffer
-  //this only works because they're GLubytes
-  m_numIndices = sizeof(tmpIndices);
+  m_numIndices = numTangents+2;
   glGenBuffers(1, &m_indexBuffer);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBuffer);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_numIndices, tmpIndices, GL_STATIC_DRAW);
   
   //release the buffers
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-  
+
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
 }
@@ -99,7 +114,9 @@ Bullet::Bullet(b2World& world):
 
 Bullet::~Bullet()
 {
+#ifdef DAMMIT
   m_world.DestroyBody(m_pBody);
+#endif
 }
 
 
@@ -109,7 +126,9 @@ void Bullet::Fire(const b2Transform& xf)
     //This should probably be based on the transform
     //from the ship
     b2Vec2 pos  = b2Mul(xf,b2Vec2(0.0f, 0.5f));
+#ifdef DAMMIT
     m_pBody->SetTransform(pos,xf.q.GetAngle());
+#endif
     //Get/Set the starting timestamp
     m_timestamp = SDL_GetTicks();
     SetActive();
@@ -117,6 +136,7 @@ void Bullet::Fire(const b2Transform& xf)
 
 void Bullet::Update()
 {
+#ifdef DAMMIT
     if(m_pBody->IsActive())
     {
         if(m_timestamp - SDL_GetTicks() <= 0)
@@ -124,44 +144,52 @@ void Bullet::Update()
             SetInactive();
 	}
     }
+#endif
 }
 
 void Bullet::SetActive()
 {
+#ifdef DAMMIT
     m_pBody->SetActive(true);
+#endif
 }
 void Bullet::SetInactive()
 {
+#ifdef DAMMIT
   m_pBody->SetActive(false);
+#endif
 }
 
 
 
 void Bullet::Draw()
 {
+#ifdef DAMMIT
     if(m_pBody->IsActive())
+#endif
     {
         glUseProgram(m_shaderProgram);
      
         //get a handle for the rotation uniform;
         GLuint locationMVP = glGetUniformLocation(m_shaderProgram,"mvpMatrix");
         glm::mat4 modelMatrix(1.0f);
-
         //glm translation vector
+#ifdef DAMMIT
+
         b2Vec2 position = m_pBody->GetWorldCenter();
      
         //box uses radians, GLM uses degrees
         float angleDeg = RAD2DEG(m_pBody->GetAngle());
-
+#endif
         //Translate then Rotate
         modelMatrix = 
-            glm::translate(modelMatrix, glm::vec3(position.x, position.y, 0.0f)); 
-        modelMatrix = 
-            glm::rotate(modelMatrix, angleDeg , m_rotateAxis);    
-
+//            glm::translate(modelMatrix, glm::vec3(position.x, position.y, 0.0f)); 
+            glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 0.0f)); 
+//        modelMatrix = 
+//            glm::rotate(modelMatrix, angleDeg , m_rotateAxis);    
         //skipping the view matrix, because we don't need it
         glm::mat4 mvpMat = m_projMat * modelMatrix;
-     
+
         glUniformMatrix4fv(locationMVP, 1, GL_FALSE, glm::value_ptr(mvpMat));
         //get a handle to the vPosition attribute of the shader
         //this can/should be done right after linking the shader and
@@ -172,8 +200,9 @@ void Bullet::Draw()
         glBindBuffer(GL_ARRAY_BUFFER, m_vertexBufferHandleArray[0]);
 
         glEnableVertexAttribArray(vertexAttribute);
-        glVertexAttribPointer(vertexAttribute, sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, 0);
- 
+//        glVertexAttribPointer(vertexAttribute, sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, 0);
+        glVertexAttribPointer(vertexAttribute, 4*sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, 0);
+
         //must bind this before glDrawElements
         //or give glDrawElements an array of indices
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBuffer);
@@ -181,7 +210,9 @@ void Bullet::Draw()
 
         glDisableVertexAttribArray(vertexAttribute);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
         glUseProgram(0);
     }
 }
