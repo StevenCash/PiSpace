@@ -13,22 +13,22 @@
 class Bullet
 {
 private:
+    static GLuint m_vertexbuffer;
+    static GLuint m_colorbuffer;
+    static GLuint m_numVertices;
+    static const glm::mat4 m_projMat;
+    static GLuint m_shaderProgram;
+
+
     b2Body *m_pBody;
     b2World& m_world;
     float32 m_radius;
 
-    static const glm::mat4 m_projMat;
-    static GLuint m_shaderProgram;
 
 
     //only using 1 vertex buffer for this object
     GLuint m_vertexBufferHandleArray[1];    
     GLuint m_colorBufferHandleArray[1];    
-
-
-    GLuint m_indexBuffer;
-    GLuint m_numIndices;
-    glm::vec3 m_rotateAxis;
 
 
     void SetActive();

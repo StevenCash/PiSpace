@@ -17,8 +17,6 @@
 
 //function prototype
 void setupDisplay(SDL_Window *&pWindow, SDL_GLContext& context, int screenx=1920, int screeny=1080, int flags=0);
-void setupWalls(b2World& world);
-
 
 int main(int argc, char *argv[])
 {
@@ -38,7 +36,7 @@ int main(int argc, char *argv[])
     SDL_Window *pWindow = 0;
     SDL_GLContext glContext;
     setupDisplay(pWindow,glContext);
-
+    
 //World for use with Box2D with no gravity
 //positive 10.0 is up
 //negative 10.0 is down
@@ -52,6 +50,7 @@ int main(int argc, char *argv[])
 
     //Create ships, event handler, and controllers (wiimotes)
     Ships shipVector;
+
     EventHandler eventHandler(pWindow,World,shipVector);
     std::vector<Wiimote*> wiimotes;
     for(int i =0; i < argc; ++i)
@@ -60,9 +59,6 @@ int main(int argc, char *argv[])
         wiimotes.push_back(new Wiimote(&eventHandler));
     }
     //TBD cleanup
-
-    //Put some boundries on the world
-    setupWalls(World);
 
     eventHandler.EventLoop();
 
@@ -92,19 +88,23 @@ void setupDisplay(SDL_Window*& pWindow, SDL_GLContext& context, int screenx, int
         std::cout << "Unable to init SDL" << std::endl;
         exit(1);
     }
+    SDL_GL_SetAttribute( SDL_GL_CONTEXT_EGL, 1 );
+    SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 2 );
+    SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 0 );
 
     SDL_DisableScreenSaver();
     pWindow = SDL_CreateWindow(
         "SDL2 OpenGL Test program", 
         SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,
-        screenx,
-        screeny,
-        FLAGS);
+        640,
+        480,
+        SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
 
     if(!pWindow)
     {
         std::cerr << "Unable to create SDL window" << std::endl;
+        std::cout << SDL_GetError() << std::endl;
         SDL_Quit();
     }
         
@@ -114,47 +114,12 @@ void setupDisplay(SDL_Window*& pWindow, SDL_GLContext& context, int screenx, int
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
     
     //clear the double buffers in hopes that 
     //it will clear EVERYTHING
     glClearColor(0.0f,0.0f,0.0f,1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-}
-
-
-
-void setupWalls(b2World& world)
-{
-    b2BodyDef bodyDef;
-
-    //Top
-    bodyDef.position.Set(-10.0f, 9.5f);
-    b2Body* topBody = world.CreateBody(&bodyDef);
-    b2EdgeShape topEdge;
-    topEdge.Set(b2Vec2(0.0, 0.0), b2Vec2(20.0,0.0));
-    topBody->CreateFixture(&topEdge, 0.0f);
-    
-      
-    //left
-    bodyDef.position.Set(-9.5f, 10.0f);
-    b2Body* leftBody = world.CreateBody(&bodyDef);
-    b2EdgeShape leftEdge;
-    leftEdge.Set(b2Vec2(0.0f, 0.0f), b2Vec2(0.0f,-20.0f));
-    leftBody->CreateFixture(&leftEdge, 0.0f);
-
-    //bottom
-    bodyDef.position.Set(-10.0f, -9.5f);
-    b2Body* groundBody = world.CreateBody(&bodyDef);
-    b2EdgeShape groundEdge;
-    groundEdge.Set(b2Vec2(0.0f, 0.0f), b2Vec2(20.0f,0.0f));
-    groundBody->CreateFixture(&groundEdge, 0.0f);
-
-    //right
-    bodyDef.position.Set(9.5f, 10.0f);
-    b2Body* rightBody = world.CreateBody(&bodyDef);
-    b2EdgeShape rightEdge;
-    rightEdge.Set(b2Vec2(0.0f, 0.0f), b2Vec2(0.0f,-20.0f));
-    rightBody->CreateFixture(&rightEdge, 0.0f);
 
 }

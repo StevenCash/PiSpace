@@ -3,6 +3,7 @@
 #include <SDL2/SDL.h>
 
 #include "WiimoteIntf.h"
+#include "ShipIntf.h"
 
 int Wiimote::index = 0;
 WiimoteMap Wiimote::m_wiimoteMap;
@@ -60,10 +61,30 @@ void Wiimote::WiimoteCallback(
 	case CWIID_MESG_BTN:
         {
             Uint32 buttons = mesg_array[i].btn_mesg.buttons;
-            m_wiimoteHandler->ButtonPushed(m_index,buttons);
             if(buttons & CWIID_BTN_HOME)
             {
                 m_wiimoteHandler->Button_Home(m_index);
+            }
+            else
+            {
+                unsigned int command = 0;
+                if(buttons & CWIID_BTN_UP)
+                {
+                    command |= SHIP_CCW;
+                }
+                if(buttons & CWIID_BTN_DOWN)
+                {
+                    command |= SHIP_CW;
+                }
+                if(buttons & CWIID_BTN_2)
+                {
+                    command |= SHIP_FORWARD;
+                }
+                if(buttons & CWIID_BTN_A)
+                {
+                    command |= SHIP_SHOOT;
+                }
+                m_wiimoteHandler->ButtonPushed(m_index,command);
             }
             break;
         }

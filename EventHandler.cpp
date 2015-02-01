@@ -3,8 +3,7 @@
 
 
 #include <SDL2/SDL_opengles2.h> 
-
-
+#include <iostream>
 
 EventHandler::EventHandler(SDL_Window *pWindow, b2World& world, Ships& ships):
     m_bQuit(false),
@@ -13,7 +12,8 @@ EventHandler::EventHandler(SDL_Window *pWindow, b2World& world, Ships& ships):
     m_timeStep(1.0f / 60.0f),
     m_velocityIterations(6),
     m_positionIterations(2),
-    m_world(world)
+    m_world(world),
+    m_walls(world)
 
 {
     m_controlEvent = SDL_RegisterEvents(1);
@@ -33,23 +33,106 @@ void EventHandler::EventLoop()
         {          
             switch(event.type)
             {
-            case SDL_QUIT:
-                m_bQuit=true;
+                case SDL_QUIT:
+                    m_bQuit=true;
+                    break;
+                case SDL_KEYDOWN:
+                {
+                    ShipIntf *pShip = 0;
+                    uint32 command = 0;
+                    switch(event.key.keysym.scancode)
+                    {
+                        case SDL_SCANCODE_X:
+                            m_bQuit=true;
+                            std::cerr << "X pressed" << std::endl;
+                            break;
+                        case SDL_SCANCODE_A: //left
+                            pShip = m_ships[0];
+                            command |= SHIP_CCW;
+                            break;
+                        case SDL_SCANCODE_D: //right
+                            pShip = m_ships[0];
+                            command |= SHIP_CW;
+                            break;
+                        case SDL_SCANCODE_W: //up
+                            pShip = m_ships[0];
+                            command |= SHIP_FORWARD;
+                            break;
+                        case SDL_SCANCODE_S: //shoot
+                            pShip = m_ships[0];
+                            command |= SHIP_SHOOT;
+                            break;
+                        case SDL_SCANCODE_K:
+                            if(m_ships.size() > 1)
+                            {
+                                pShip = m_ships[1];
+                                command |= SHIP_SHOOT;
+                            }
+                            break;
+                        default:
+                            break;
+                    };
+                    if(pShip)
+                    {
+                        pShip->ProcessInput(command);
+                    }   
+                }
                 break;
-            case SDL_USEREVENT:
-            {
-                //All of the user event types should have a ship pointer
-                ShipIntf *pShip = reinterpret_cast<ShipIntf*>(event.user.data1);
-                pShip->ProcessInput(event.user.code);
+                case SDL_KEYUP:
+                {
+                    ShipIntf *pShip = 0;
+                    uint32 command = 0;
+                    switch(event.key.keysym.scancode)
+                    {
+                        case SDL_SCANCODE_A: //left
+                            pShip = m_ships[0];
+                            command &= ~SHIP_CCW;
+                            break;
+                        case SDL_SCANCODE_D: //right
+                            pShip = m_ships[0];
+                            command &= ~SHIP_CW;
+                            break;
+                        case SDL_SCANCODE_W: //up
+                            pShip = m_ships[0];
+                            command &= ~SHIP_FORWARD;
+                            break;
+                        case SDL_SCANCODE_S: //shoot
+                            pShip = m_ships[0];
+                            command &= ~SHIP_SHOOT;
+                            break;
+                        case SDL_SCANCODE_K:
+                            if(m_ships.size()  > 1)
+                            {
+                                pShip = m_ships[1];
+                                command &= ~SHIP_SHOOT;
+                            }
+                            break;
+                        default:
+                            break;
+                    };
+                    if(pShip)
+                    {
+                        pShip->ProcessInput(command);
+                    }   
+
+                }
                 break;
-            }                    
-            default:
-                break;
+
+                case SDL_USEREVENT:
+                {
+                    //All of the user event types should have a ship pointer
+                    ShipIntf *pShip = reinterpret_cast<ShipIntf*>(event.user.data1);
+                    pShip->ProcessInput(event.user.code);
+                    break;
+                }                    
+                default:
+                    break;
             }
         }
         
         m_world.Step(m_timeStep, m_velocityIterations, m_positionIterations);
 
+        m_walls.Draw();
         DrawShips();
         SDL_Delay(100);
     }
@@ -74,7 +157,7 @@ void EventHandler::DrawShips() const
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #ifdef DEBUG
-//    m_world.DrawDebugData();
+    m_world.DrawDebugData();
 #endif
 
     for(Ships::const_iterator iter = m_ships.begin(), endIter = m_ships.end();

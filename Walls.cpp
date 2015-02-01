@@ -67,7 +67,6 @@ Walls::Walls(b2World& world):
 
 void Walls::Draw()
 {
-    TRACE;
     glUseProgram ( m_shaderProgram ) ;
     //setup the vertices!
     GLuint positionAttribute = glGetAttribLocation(m_shaderProgram,"vPosition");

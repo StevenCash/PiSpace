@@ -8,6 +8,7 @@
 #include <Box2D/Box2D.h>
 
 #include "ShipIntf.h"
+#include "Walls.h"
 
 //Interface to receive events from some kind of controller object.
 class EventHandler : public WiimoteIntf
@@ -24,7 +25,7 @@ private:
     int32 m_velocityIterations;
     int32 m_positionIterations;
     b2World& m_world;
-
+    Walls m_walls;
     void DrawShips() const;
 public:
     EventHandler(SDL_Window *pWindow,b2World& world,Ships& ships);

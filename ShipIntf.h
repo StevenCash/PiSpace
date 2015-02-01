@@ -3,6 +3,11 @@
 
 #include <vector>
 
+#define SHIP_FORWARD 0x00000001
+#define SHIP_CCW     0x00000002
+#define SHIP_CW      0x00000004
+#define SHIP_SHOOT   0x00000008
+
 class ShipIntf
 {
 public:

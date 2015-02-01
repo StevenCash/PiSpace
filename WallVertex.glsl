@@ -1,4 +1,4 @@
-#version 110
+#version 100
 attribute vec2 vPosition;
 uniform mat4 mvpMatrix;
 void main()

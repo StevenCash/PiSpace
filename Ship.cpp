@@ -1,5 +1,3 @@
-//7th str and oleander,  mexico beach fl
-
 #include <algorithm>
 #include <iostream>
 
@@ -9,6 +7,7 @@
 #include "ShaderUtil.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
+
 
 //Setup statics
 int Ship::index = 0;
@@ -146,7 +145,6 @@ Ship::Ship(b2World& world):
         shaderList.push_back(createShaderFromFile(GL_FRAGMENT_SHADER, "ShipFragment.glsl"));
         
         m_shaderProgram = createShaderProgram(shaderList);
-    
         //done with the shaders, so delete them
         //do this here instead of in createShaderProgram so that a shader
         //can be reused without rebuilding it
@@ -179,15 +177,11 @@ Ship::Ship(b2World& world):
 
     //release the buffers
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
 }
 
 //Main drawing function for this Ship
 void Ship::Draw()
 {
-
      glUseProgram(m_shaderProgram);
 
      //get a handle for the rotation uniform;
@@ -226,15 +220,15 @@ void Ship::Draw()
     glVertexAttribPointer(colorAttribute, 4, GL_FLOAT, GL_FALSE, sizeof(TempStruct), (void*)(sizeof(GLfloat)*4));
     glEnableVertexAttribArray(colorAttribute);
 
-
    //must bind this before glDrawElements
     //or give glDrawElements an array of indices
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBuffer);
+    
     glDrawElements(GL_TRIANGLES,m_numIndices,GL_UNSIGNED_BYTE,0);
 
-
-
+    //Cleanup
     glDisableVertexAttribArray(vertexAttribute);
+    glDisableVertexAttribArray(colorAttribute);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glUseProgram(0);
@@ -258,9 +252,9 @@ void Ship::stop()
 void Ship::ProcessInput(int commands)
 {
     //For now, use the constants from CWIID
-    m_bForceCCW = (commands & CWIID_BTN_UP);
-    m_bForceCW = (commands & CWIID_BTN_DOWN);
-    m_bForceForward = (commands & CWIID_BTN_2);
+    m_bForceCCW = (commands & SHIP_CCW);
+    m_bForceCW = (commands & SHIP_CW);
+    m_bForceForward = (commands & SHIP_FORWARD);
 
     if(commands & CWIID_BTN_A)
     {

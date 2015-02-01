@@ -13,6 +13,7 @@
 //  Other failures?
 GLuint createShaderFromFile(GLenum shaderType, const std::string& shaderFile)
 {
+std::cout << "Creating shader: " << shaderFile << std::endl;
     //Load the shader file
     std::fstream shaderStream;
     shaderStream.open(shaderFile.c_str());

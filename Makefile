@@ -23,13 +23,15 @@ Ship.o\
 GenericDrawing.o \
 EventHandler.o \
 Bullet.o \
+Walls.o \
 
-DEBUGFLAGS=-DDEBUG
+
+FLAGS=-march=armv6 -mfpu=vfp -mfloat-abi=hard
 
 TARGET=space
 
 %.o: %.cpp Makefile
-	${CXX} ${DEBUGFLAGS} -W -Wall -c ${INCLUDE} $< -o $@
+	${CXX} ${FLAGS} -W -Wall -c ${INCLUDE} $< -o $@
 
 
 ${TARGET}: ${OBJECTS} 
