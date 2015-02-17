@@ -13,7 +13,6 @@
 #include <Box2D/Box2D.h>
 #include "Ship.h"
 #include "EventHandler.h"
-#include "DebugDraw.h"
 
 //function prototype
 void setupDisplay(SDL_Window *&pWindow, SDL_GLContext& context, int screenx=1920, int screeny=1080, int flags=0);
@@ -43,10 +42,6 @@ int main(int argc, char *argv[])
 //positive is right,
 //negative is left
     b2World World(b2Vec2(0.0f,0.0f));
-    DebugDraw debugDraw;
-    debugDraw.SetFlags(0xFFFF);
-    //initial display
-    World.SetDebugDraw(&debugDraw);
 
     //Create ships, event handler, and controllers (wiimotes)
     Ships shipVector;
@@ -97,9 +92,9 @@ void setupDisplay(SDL_Window*& pWindow, SDL_GLContext& context, int screenx, int
         "SDL2 OpenGL Test program", 
         SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,
-        640,
-        480,
-        SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
+        screenx,
+        screeny,
+        FLAGS);
 
     if(!pWindow)
     {
@@ -121,5 +116,4 @@ void setupDisplay(SDL_Window*& pWindow, SDL_GLContext& context, int screenx, int
     //it will clear EVERYTHING
     glClearColor(0.0f,0.0f,0.0f,1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 }

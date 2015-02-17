@@ -20,10 +20,10 @@ Wiimote.o\
 Space.o\
 ShaderUtil.o\
 Ship.o\
-GenericDrawing.o \
 EventHandler.o \
 Bullet.o \
 Walls.o \
+Vortex.o \
 
 
 FLAGS=-march=armv6 -mfpu=vfp -mfloat-abi=hard

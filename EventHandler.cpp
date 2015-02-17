@@ -131,9 +131,11 @@ void EventHandler::EventLoop()
         }
         
         m_world.Step(m_timeStep, m_velocityIterations, m_positionIterations);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         m_walls.Draw();
         DrawShips();
+        SDL_GL_SwapWindow(m_pWindow);
         SDL_Delay(100);
     }
 
@@ -155,10 +157,6 @@ void EventHandler::Button_Home(int  /* controllerIndex */)
 
 void EventHandler::DrawShips() const
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-#ifdef DEBUG
-    m_world.DrawDebugData();
-#endif
 
     for(Ships::const_iterator iter = m_ships.begin(), endIter = m_ships.end();
         iter != endIter;
@@ -167,7 +165,6 @@ void EventHandler::DrawShips() const
         (*iter)->DoCommands();
         (*iter)->Draw();
     }
-    SDL_GL_SwapWindow(m_pWindow);
         
 }            
 
