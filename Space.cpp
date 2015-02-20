@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
     SDL_Window *pWindow = 0;
     SDL_GLContext glContext;
 
-    setupDisplay(pWindow,glContext);
+    setupDisplay(pWindow,glContext,640,480);
 
 //World for use with Box2D with no gravity
 //positive 10.0 is up
@@ -99,15 +99,20 @@ void setupDisplay(SDL_Window*& pWindow, SDL_GLContext& context, int screenx, int
     }
 #ifdef WINDOWS
     uint32 FLAGS = SDL_WINDOW_OPENGL;
-#elif RPI
+#else
     uint32 FLAGS = SDL_WINDOW_OPENGL|SDL_WINDOW_FULLSCREEN;
 #endif
     
-    SDL_GL_SetAttribute ( SDL_GL_CONTEXT_MAJOR_VERSION , 3 ) ;
+    SDL_GL_SetAttribute ( SDL_GL_CONTEXT_EGL , 1 ) ;
+    SDL_GL_SetAttribute ( SDL_GL_CONTEXT_MAJOR_VERSION , 2 );
     SDL_GL_SetAttribute ( SDL_GL_CONTEXT_MINOR_VERSION , 0 ) ;
     SDL_GL_SetAttribute ( SDL_GL_DOUBLEBUFFER , 1 ) ;
-    SDL_GL_SetAttribute ( SDL_GL_DEPTH_SIZE , 24 ) ;
-    if ( ( pWindow = SDL_CreateWindow ( "SDL opengl 3.3 + " , 100 , 100 , screenx , screeny, FLAGS ) ) == NULL ) {
+ //   SDL_GL_SetAttribute ( SDL_GL_DEPTH_SIZE , 24 ) ;
+    if ( ( pWindow = SDL_CreateWindow ( "PiSpace " ,
+            SDL_WINDOWPOS_UNDEFINED, 
+            SDL_WINDOWPOS_UNDEFINED, 
+            screenx , screeny,
+            FLAGS ) ) == NULL ) {
         std::cerr << "Unable to open window" << std::endl;
         std::cerr << SDL_GetError() << std::endl;
         return ;
@@ -128,8 +133,8 @@ void setupDisplay(SDL_Window*& pWindow, SDL_GLContext& context, int screenx, int
 #endif
     glViewport(0,0,screenx,screeny);
 
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
+//    glEnable(GL_DEPTH_TEST);
+//    glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     

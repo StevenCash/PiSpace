@@ -1,4 +1,4 @@
-#version 110
+#version 100
 varying vec3 vColorV;
 varying float vFade;
 void main()
