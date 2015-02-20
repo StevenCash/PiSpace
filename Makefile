@@ -13,7 +13,6 @@ LIBRARIES=\
 -lcwiid \
 -lBox2D
 
-
 CXX=g++
 OBJECTS=\
 Wiimote.o\
@@ -25,8 +24,7 @@ Bullet.o \
 Walls.o \
 Vortex.o \
 
-
-FLAGS=-march=armv6 -mfpu=vfp -mfloat-abi=hard
+FLAGS=-march=armv6 -mfpu=vfp -mfloat-abi=hard -DRPI
 
 TARGET=space
 

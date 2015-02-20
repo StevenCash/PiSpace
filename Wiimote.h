@@ -4,10 +4,9 @@
 #include <bluetooth/bluetooth.h>
 #include <cwiid.h>
 #include <map>
-#include "ControllerIntf.h"
 
 
-class WiimoteIntf;
+class ControllerIntf;
 
 typedef enum
 {
@@ -20,12 +19,12 @@ class Wiimote;
 typedef std::map<cwiid_wiimote_t*, Wiimote*> WiimoteMap;
 
 
-class Wiimote : public ControllerIntf
+class Wiimote
 {
 public:
     //constructor.  Starts the connection to a wiimote.
     //throw some exception if it fails
-    explicit Wiimote(WiimoteIntf *wiimoteHandler);
+    explicit Wiimote(ControllerIntf *wiimoteHandler);
 
     //disconnect the wiimote from this object
     ~Wiimote();
@@ -36,7 +35,7 @@ public:
         struct timespec *timestamp);
 
 private:
-    WiimoteIntf *m_wiimoteHandler;
+    ControllerIntf *m_wiimoteHandler;
 //setup a constant for the equivalent of BD_ADDR_ANY
 //because the one in bluetooth.h is stupid
     static const bdaddr_t kBdAddrAny;

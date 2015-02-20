@@ -2,16 +2,18 @@
 #define EVENTHANDLER_H
 
 
-#include "WiimoteIntf.h"
+#include "ControllerIntf.h"
 
 #include <SDL2/SDL.h>
 #include <Box2D/Box2D.h>
 
+#include "Vortex.h"
+
 #include "ShipIntf.h"
-#include "Walls.h"
+class Walls;
 
 //Interface to receive events from some kind of controller object.
-class EventHandler : public WiimoteIntf
+class EventHandler : public ControllerIntf
 {
 private:
     bool m_bQuit;
@@ -25,10 +27,12 @@ private:
     int32 m_velocityIterations;
     int32 m_positionIterations;
     b2World& m_world;
-    Walls m_walls;
-    void DrawShips() const;
+    Walls& m_walls;
+
+    void ProcessShips() const;
+    void ProcessEffects() const;
 public:
-    EventHandler(SDL_Window *pWindow,b2World& world,Ships& ships);
+    EventHandler(SDL_Window *pWindow,b2World& world,Ships& ships, Walls& walls);
 
     //Main Event Loop
     void EventLoop();
@@ -37,7 +41,7 @@ public:
     virtual ~EventHandler();
     
     //Accessor functions to add events to the event handler
-    virtual void Button_Home(int controllerIndex);
+    virtual void ButtonHome(int controllerIndex);
     virtual void ButtonPushed(int controller, int buttons);
 
     

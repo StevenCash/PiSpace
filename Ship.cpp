@@ -1,8 +1,6 @@
 #include <algorithm>
 #include <iostream>
 
-#include <cwiid.h>
-
 #include "Ship.h"
 #include "ShaderUtil.h"
 #include <glm/gtc/type_ptr.hpp>
@@ -22,27 +20,25 @@ Ship::Ship(b2World& world):
     m_bForceCCW(false),
     m_bForceCW(false),
     m_bForceForward(false),
-    m_bullet(world)
-
+    m_bullet(world,m_index),
+    m_startX(0.0f),
+    m_startY(0.0f),
+    m_vortex(world)
 {
-
     //calculate a start position
-    float startX = 0.0f;
-    float startY = 0.0f;
-
     switch(m_index)
     {
     case 0:
-        startX = -5.0f;
+        m_startX = -5.0f;
         break;
     case 1:
-        startX = 5.0f;
+        m_startX = 5.0f;
         break;
     case 2:
-        startY = 5.0f;
+        m_startY = 5.0f;
         break;
     case 3:
-        startY = -5.0f;
+        m_startY = -5.0f;
         break;
     default:
         std::cerr << "index out of range" << std::endl;
@@ -51,7 +47,7 @@ Ship::Ship(b2World& world):
     //Set up the object for Box2D
     b2BodyDef bodyDef;
     bodyDef.type = b2_dynamicBody;
-    bodyDef.position.Set(startX,startY); //trying to start at the center
+    bodyDef.position.Set(m_startX,m_startY); //trying to start at the center
     m_pBody = m_worldRef.CreateBody(&bodyDef);
     b2PolygonShape shipShape;
 
@@ -234,6 +230,7 @@ void Ship::Draw()
     glUseProgram(0);
 
     m_bullet.Draw();
+    m_vortex.Draw();
 }
 
 
@@ -243,27 +240,43 @@ Ship::~Ship()
     m_worldRef.DestroyBody(m_pBody);
 }
 
-void Ship::stop()
-{
-    m_pBody->SetLinearVelocity(b2Vec2(0.0f,0.0f));
-}
-
 
 void Ship::ProcessInput(int commands)
 {
+    
     //For now, use the constants from CWIID
     m_bForceCCW = (commands & SHIP_CCW);
     m_bForceCW = (commands & SHIP_CW);
     m_bForceForward = (commands & SHIP_FORWARD);
-
-    if(commands & CWIID_BTN_A)
+    
+    if(commands & SHIP_SHOOT)
     {
         m_bullet.Fire(m_pBody->GetTransform());
     }
+    
+    if(commands & SHIP_STOP)
+    {
+        m_pBody->SetLinearVelocity(b2Vec2(0.0f,0.0f));
+        m_pBody->SetAngularVelocity(0.0f);
+    }
+
+    if(commands & SHIP_RESET)
+    {
+        m_pBody->SetLinearVelocity(b2Vec2(0.0f,0.0f));
+        m_pBody->SetAngularVelocity(0.0f);
+        m_pBody->SetTransform(b2Vec2(m_startX, m_startY), 0.0f);
+    }
+
+    if(commands & SHIP_BOMB)
+    {
+        m_vortex.activate(m_pBody->GetWorldCenter());
+    }
+
 }
 
 
-
+//Apply physics which are based on last state of commands
+// passed from the event handler
 void Ship::DoCommands()
 {
     
@@ -285,3 +298,6 @@ void Ship::DoCommands()
     }
 
 }
+
+
+

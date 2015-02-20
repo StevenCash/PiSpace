@@ -1,7 +1,8 @@
 #ifndef SHADERUTIL_H
 #define SHADERUTIL_H
 
-#include <SDL2/SDL_opengles2.h> 
+#include "GLHeader.h"
+
 #include <vector>
 #include <string>
 
@@ -19,7 +20,6 @@ GLuint createShaderFromFile(GLenum shaderType, const std::string& shaderFile);
 
 //Take a list of shaders, and put them in a shader program together
 GLuint createShaderProgram(const ShaderList_T &shaderList);
-
 
 void checkGlErrors(int lineno);
 

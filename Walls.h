@@ -1,7 +1,8 @@
 #ifndef WALLS_H
 #define WALLS_H
 
-#include <SDL2/SDL_opengles2.h> 
+#include "GLHeader.h"
+
 #include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
 
 class b2World;
@@ -13,6 +14,7 @@ public:
     explicit Walls(b2World& world);
     void Draw();
     ~Walls();
+
 private:
     static const glm::mat4 m_projMat;
 

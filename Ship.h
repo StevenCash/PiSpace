@@ -1,11 +1,13 @@
 #ifndef SHIP_H
 #define SHIP_H
 
-#include <SDL2/SDL_opengles2.h> 
+#include "GLHeader.h"
+
 #include <Box2D/Box2D.h>
 #include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
 #include <vector>
 #include "Bullet.h"
+#include "Vortex.h"
 #include "ShipIntf.h"
 
 #define RAD2DEG(x) ((x) * 57.2957795f)
@@ -33,7 +35,7 @@ public:
     //turn a bit mapped field into a set of commands to be handled
     //during DoCommands
     void ProcessInput(int commands);
-    void stop();
+    
 private:
     static const glm::mat4 m_projMat;
     glm::vec3 m_rotateAxis;
@@ -65,8 +67,12 @@ private:
     bool m_bForceCW; //right
     bool m_bForceForward; // Forward thrust
 
-
     Bullet m_bullet;
+
+    float m_startX;
+    float m_startY;
+
+    Vortex m_vortex;
 };
 
 #endif //SHIP_H

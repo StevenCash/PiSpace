@@ -1,21 +1,30 @@
 //SDL (2)
+#include "GLHeader.h"
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_opengles2.h> 
 
 #include <iostream>
 #include <fstream>
 #include <string>
 
-//Wii stuff
-#include "Wiimote.h"
+#include "TraceLogger.h"
 
 //Box 2D
 #include <Box2D/Box2D.h>
+
+//Wii stuff remote
+#ifdef RPI
+#include "Wiimote.h"
+#endif
+
 #include "Ship.h"
 #include "EventHandler.h"
+#include "Walls.h"
+
 
 //function prototype
-void setupDisplay(SDL_Window *&pWindow, SDL_GLContext& context, int screenx=1920, int screeny=1080, int flags=0);
+void setupDisplay(SDL_Window *&pWindow, SDL_GLContext& context, int screenx=640, int screeny=480);
+
+
 
 int main(int argc, char *argv[])
 {
@@ -29,13 +38,12 @@ int main(int argc, char *argv[])
     }
 
     
-
-    
     //variables to handle the SDL display
     SDL_Window *pWindow = 0;
     SDL_GLContext glContext;
+
     setupDisplay(pWindow,glContext);
-    
+
 //World for use with Box2D with no gravity
 //positive 10.0 is up
 //negative 10.0 is down
@@ -46,15 +54,26 @@ int main(int argc, char *argv[])
     //Create ships, event handler, and controllers (wiimotes)
     Ships shipVector;
 
-    EventHandler eventHandler(pWindow,World,shipVector);
+    //Put some boundries on the world
+    Walls myWalls(World);
+
+#ifdef RPI
     std::vector<Wiimote*> wiimotes;
+#endif
+
+    //Instantiate main event handler/control loop object
+    EventHandler eventHandler(pWindow,World,shipVector, myWalls);
+
     for(int i =0; i < argc; ++i)
     {
         shipVector.push_back(new Ship(World));
+#ifdef RPI
         wiimotes.push_back(new Wiimote(&eventHandler));
+#endif
     }
-    //TBD cleanup
 
+
+    //Run the main loop
     eventHandler.EventLoop();
 
     //clean up everything set up by the display
@@ -62,7 +81,8 @@ int main(int argc, char *argv[])
     SDL_DestroyWindow(pWindow);
     pWindow = 0;
     SDL_Quit();
-    std::cout << "Finished" << std::endl;
+
+    return 0;
 }
 
 
@@ -70,42 +90,43 @@ int main(int argc, char *argv[])
 
 //****************************************************************
 //Basic SDL2 setup of a screen for OpenGL
-void setupDisplay(SDL_Window*& pWindow, SDL_GLContext& context, int screenx, int screeny, int flags)
+void setupDisplay(SDL_Window*& pWindow, SDL_GLContext& context, int screenx, int screeny)
 {
-    int FLAGS = SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL;
-    if (flags != 0)
-    {
-        FLAGS=flags;
+    if ( SDL_Init ( SDL_INIT_VIDEO ) < 0 ) {
+        std::cerr << "Unable to initialize SDL " << std::endl;
+        std::cerr << SDL_GetError() << std::endl;
+        return ;
     }
-
-    if(SDL_Init(SDL_INIT_VIDEO) == -1)
-    {
-        std::cout << "Unable to init SDL" << std::endl;
-        exit(1);
+#ifdef WINDOWS
+    uint32 FLAGS = SDL_WINDOW_OPENGL;
+#elif RPI
+    uint32 FLAGS = SDL_WINDOW_OPENGL|SDL_WINDOW_FULLSCREEN;
+#endif
+    
+    SDL_GL_SetAttribute ( SDL_GL_CONTEXT_MAJOR_VERSION , 3 ) ;
+    SDL_GL_SetAttribute ( SDL_GL_CONTEXT_MINOR_VERSION , 0 ) ;
+    SDL_GL_SetAttribute ( SDL_GL_DOUBLEBUFFER , 1 ) ;
+    SDL_GL_SetAttribute ( SDL_GL_DEPTH_SIZE , 24 ) ;
+    if ( ( pWindow = SDL_CreateWindow ( "SDL opengl 3.3 + " , 100 , 100 , screenx , screeny, FLAGS ) ) == NULL ) {
+        std::cerr << "Unable to open window" << std::endl;
+        std::cerr << SDL_GetError() << std::endl;
+        return ;
     }
-    SDL_GL_SetAttribute( SDL_GL_CONTEXT_EGL, 1 );
-    SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 2 );
-    SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 0 );
-
     SDL_DisableScreenSaver();
-    pWindow = SDL_CreateWindow(
-        "SDL2 OpenGL Test program", 
-        SDL_WINDOWPOS_UNDEFINED,
-        SDL_WINDOWPOS_UNDEFINED,
-        screenx,
-        screeny,
-        FLAGS);
+    
+    context = SDL_GL_CreateContext ( pWindow ) ;
+    SDL_GL_SetSwapInterval ( 1 ) ;
 
-    if(!pWindow)
+#ifdef WINDOWS
+    glewExperimental = true;
+    GLenum err = glewInit () ;
+    if(err != GLEW_OK)
     {
-        std::cerr << "Unable to create SDL window" << std::endl;
-        std::cout << SDL_GetError() << std::endl;
-        SDL_Quit();
+        std::cerr << "Error initializing GLEW" << std::endl;
+        return;
     }
-        
-    context = SDL_GL_CreateContext(pWindow);
-    //just use the max size for the GL Viewport
-    glViewport(0,0,1920,1080);
+#endif
+    glViewport(0,0,screenx,screeny);
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -117,3 +138,4 @@ void setupDisplay(SDL_Window*& pWindow, SDL_GLContext& context, int screenx, int
     glClearColor(0.0f,0.0f,0.0f,1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
+

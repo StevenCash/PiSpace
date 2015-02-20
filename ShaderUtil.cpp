@@ -1,5 +1,4 @@
 
-#include <SDL2/SDL_opengles2.h> 
 
 #include <iostream>
 #include <fstream>
@@ -13,7 +12,6 @@
 //  Other failures?
 GLuint createShaderFromFile(GLenum shaderType, const std::string& shaderFile)
 {
-std::cout << "Creating shader: " << shaderFile << std::endl;
     //Load the shader file
     std::fstream shaderStream;
     shaderStream.open(shaderFile.c_str());
@@ -40,9 +38,7 @@ std::cout << "Creating shader: " << shaderFile << std::endl;
         throw 1;
         break;
    }
-
     shaderHandle = glCreateShader(shaderType);
-
     //assign the source for this shader to the handle
     const char * strFileData = shaderString.c_str();
     glShaderSource(shaderHandle, 1, &strFileData, NULL);
@@ -98,20 +94,20 @@ GLuint createShaderProgram(const ShaderList_T &shaderList)
     glGetProgramiv (program, GL_LINK_STATUS, &status);
     if (status == GL_FALSE)
     {
+        //Get/print out the opengl error logging
         GLint infoLogLength;
         glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
 
-        GLchar *strInfoLog = new GLchar[infoLogLength + 1];
+        GLchar strInfoLog[infoLogLength + 1];
         glGetProgramInfoLog(program, infoLogLength, NULL, strInfoLog);
         std::cerr 
             << "Linker failure:" 
             << strInfoLog
             << std::endl;
 
-        delete[] strInfoLog;
     }
 
-    for(size_t iLoop = 0; iLoop < shaderList.size(); iLoop++)
+    for(size_t iLoop = 0; iLoop < shaderList.size(); ++iLoop)
     {
         glDetachShader(program, shaderList[iLoop]);
     }

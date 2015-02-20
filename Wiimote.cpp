@@ -2,7 +2,7 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 
-#include "WiimoteIntf.h"
+#include "ControllerIntf.h"
 #include "ShipIntf.h"
 
 int Wiimote::index = 0;
@@ -13,7 +13,7 @@ WiimoteMap Wiimote::m_wiimoteMap;
 const bdaddr_t Wiimote::kBdAddrAny = {{0, 0, 0, 0, 0, 0}};
 
 
-Wiimote::Wiimote(WiimoteIntf *wiimoteHandler)
+Wiimote::Wiimote(ControllerIntf *wiimoteHandler)
     :m_wiimoteHandler(wiimoteHandler),
      m_pWiimote(NULL),
      m_index(index++),
@@ -61,30 +61,43 @@ void Wiimote::WiimoteCallback(
 	case CWIID_MESG_BTN:
         {
             Uint32 buttons = mesg_array[i].btn_mesg.buttons;
+            Uint32 command = 0;
+            //TBD translate button to commands in the ShipIntf
+            if(buttons & CWIID_BTN_LEFT)
+            {
+                //Nothing yet
+            }
+
+            if(buttons & CWIID_BTN_UP)
+            {
+                command |= SHIP_CCW;
+            }
+            if(buttons & CWIID_BTN_DOWN)
+            {
+                command |= SHIP_CW;
+            }
+            if(buttons & CWIID_BTN_2)
+            {
+                command |= SHIP_FORWARD;
+            }
+            if(buttons & CWIID_BTN_1)
+            {
+                command |= SHIP_STOP;
+            }
+            if(buttons & CWIID_BTN_A)
+            {
+                command |= SHIP_SHOOT;
+            }
+            if(buttons & CWIID_BTN_B)
+            {
+                command |= SHIP_BOMB;
+            }
+
+
+            m_wiimoteHandler->ButtonPushed(m_index,command);
             if(buttons & CWIID_BTN_HOME)
             {
-                m_wiimoteHandler->Button_Home(m_index);
-            }
-            else
-            {
-                unsigned int command = 0;
-                if(buttons & CWIID_BTN_UP)
-                {
-                    command |= SHIP_CCW;
-                }
-                if(buttons & CWIID_BTN_DOWN)
-                {
-                    command |= SHIP_CW;
-                }
-                if(buttons & CWIID_BTN_2)
-                {
-                    command |= SHIP_FORWARD;
-                }
-                if(buttons & CWIID_BTN_A)
-                {
-                    command |= SHIP_SHOOT;
-                }
-                m_wiimoteHandler->ButtonPushed(m_index,command);
+                m_wiimoteHandler->ButtonHome(m_index);
             }
             break;
         }
