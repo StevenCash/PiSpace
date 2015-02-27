@@ -1,45 +1,31 @@
 #include "ContactListener.h"
 #include <iostream>
 #include "DestroyableIntf.h"
-void ContactListener::PreSolve(b2Contact* contact, const b2Manifold* /* oldManifold*/)
+#include "EventHandler.h"
+
+ContactListener::ContactListener(EventHandler& eventHandler)
+    :m_eventHandler(eventHandler)
 {
-    const b2Body* bodyA = contact->GetFixtureA()->GetBody();
-    const b2Body* bodyB = contact->GetFixtureB()->GetBody();    
+}
 
 
+void ContactListener::BeginContact(b2Contact* contact)
+{
+     b2Body* bodyA = contact->GetFixtureA()->GetBody();
+     b2Body* bodyB = contact->GetFixtureB()->GetBody();    
 
-    if((bodyA->GetType() == b2_staticBody) ||
-       (bodyB->GetType() == b2_staticBody))
+    //Do nothing
+    if((bodyA->GetType() != b2_staticBody) &&
+       (bodyB->GetType() != b2_staticBody))
     {
-        std::cout << "Something hit a wall"<< std::endl;
+        void* pTempA =
+            bodyA->GetUserData();
+        void* pTempB =
+            bodyB->GetUserData();
+        if(pTempA != pTempB)
+        {
+            m_eventHandler.CollisionHappened(bodyA,bodyB);
+        }
+        
     }
-    else
-    {
-        DestroyableIntf* pDestroy =
-            static_cast<DestroyableIntf*>(bodyA->GetUserData());
-
-        if(pDestroy)
-        {
-            std::cout << "WTF" << std::endl;
-
-        }
-
-/*
-  
-        DestroyableIntf* pDestroy =
-            static_cast<DestroyableIntf*>(bodyA->GetUserData());
-        if(pDestroy)
-        {
-            pDestroy->Destroy();
-        }
-
-        pDestroy =
-            static_cast<DestroyableIntf*>(bodyB->GetUserData());
-        if(pDestroy)
-        {
-            pDestroy->Destroy();
-        }
-*/
-    }        
-
 }

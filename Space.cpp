@@ -22,7 +22,7 @@
 
 
 //function prototype
-void setupDisplay(SDL_Window *&pWindow, SDL_GLContext& context, int screenx=640, int screeny=480);
+void setupDisplay(SDL_Window *&pWindow, SDL_GLContext& context, int screenx=1920, int screeny=1080);
 
 
 
@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
     SDL_Window *pWindow = 0;
     SDL_GLContext glContext;
 
-    setupDisplay(pWindow,glContext,640,480);
+    setupDisplay(pWindow,glContext,1920,1080);
 
 //World for use with Box2D with no gravity
 //positive 10.0 is up

@@ -1,9 +1,11 @@
-
-#include "EventHandler.h"
-
+#include <typeinfo>
 #include "GLHeader.h"
 #include <iostream>
+#include <Box2D/Box2D.h>
+#include "EventHandler.h"
 #include "Walls.h"
+#include "DestroyableIntf.h"
+#include "TraceLogger.h"
 
 EventHandler::EventHandler(SDL_Window *pWindow, b2World& world, Ships& ships, Walls& walls):
     m_bQuit(false),
@@ -46,39 +48,25 @@ void EventHandler::EventLoop()
                             m_bQuit=true;
                             break;
                         case SDL_SCANCODE_Q: //Stop the ship exactly where it is,
-                            pShip = m_ships[0];
-                            command |= SHIP_STOP;
-                            break;
                         case SDL_SCANCODE_R: //Reset to 0 position
-                            pShip = m_ships[0];
-                            command |= SHIP_RESET;
-                            break;
                         case SDL_SCANCODE_A: //left
-                            pShip = m_ships[0];
-                            command |= SHIP_CCW;
-                            break;
                         case SDL_SCANCODE_D: //right
-                            pShip = m_ships[0];
-                            command |= SHIP_CW;
-                            break;
                         case SDL_SCANCODE_W: //up
-                            pShip = m_ships[0];
-                            command |= SHIP_FORWARD;
-                            break;
                         case SDL_SCANCODE_S: //shoot
-                            pShip = m_ships[0];
-                            command |= SHIP_SHOOT;
-                            break;
-                        case SDL_SCANCODE_E:
-                            pShip = m_ships[0];
-                            command |= SHIP_BOMB;
+                        case SDL_SCANCODE_E: //bomb
+                            pShip=m_ships[0];
                             break;
 
-                        case SDL_SCANCODE_K:
+                        case SDL_SCANCODE_U: //Stop the ship exactly where it is,
+                        case SDL_SCANCODE_P: //Reset to 0 position
+                        case SDL_SCANCODE_J: //left
+                        case SDL_SCANCODE_L: //right
+                        case SDL_SCANCODE_I: //up
+                        case SDL_SCANCODE_K: //shoot
+                        case SDL_SCANCODE_O: //bomb
                             if(m_ships.size() > 1)
                             {
                                 pShip = m_ships[1];
-                                command |= SHIP_SHOOT;
                             }
                             break;
                         default:
@@ -86,6 +74,7 @@ void EventHandler::EventLoop()
                     };
                     if(pShip)
                     {
+                        command=KeyDown(event.key.keysym.scancode);
                         pShip->ProcessInput(command);
                     }   
                 }
@@ -96,31 +85,25 @@ void EventHandler::EventLoop()
                     uint32 command = 0;
                     switch(event.key.keysym.scancode)
                     {
+                        case SDL_SCANCODE_Q: //Stop the ship exactly where it is,
+                        case SDL_SCANCODE_R: //Reset to 0 position
                         case SDL_SCANCODE_A: //left
-                            pShip = m_ships[0];
-                            command &= ~SHIP_CCW;
-                            break;
                         case SDL_SCANCODE_D: //right
-                            pShip = m_ships[0];
-                            command &= ~SHIP_CW;
-                            break;
                         case SDL_SCANCODE_W: //up
-                            pShip = m_ships[0];
-                            command &= ~SHIP_FORWARD;
-                            break;
                         case SDL_SCANCODE_S: //shoot
-                            pShip = m_ships[0];
-                            command &= ~SHIP_SHOOT;
+                        case SDL_SCANCODE_E: //bomb
+                            pShip=m_ships[0];
                             break;
-                        case SDL_SCANCODE_E:
-                            pShip = m_ships[0];
-                            command &= ~SHIP_BOMB;
-                            break;
-                        case SDL_SCANCODE_K:
-                            if(m_ships.size()  > 1)
+                        case SDL_SCANCODE_U: //Stop the ship exactly where it is,
+                        case SDL_SCANCODE_P: //Reset to 0 position
+                        case SDL_SCANCODE_J: //left
+                        case SDL_SCANCODE_L: //right
+                        case SDL_SCANCODE_I: //up
+                        case SDL_SCANCODE_K: //shoot
+                        case SDL_SCANCODE_O: //bomb
+                            if(m_ships.size() > 1)
                             {
                                 pShip = m_ships[1];
-                                command &= ~SHIP_SHOOT;
                             }
                             break;
                         default:
@@ -128,6 +111,7 @@ void EventHandler::EventLoop()
                     };
                     if(pShip)
                     {
+                        command=KeyUp(event.key.keysym.scancode);
                         pShip->ProcessInput(command);
                     }   
 
@@ -148,12 +132,14 @@ void EventHandler::EventLoop()
         //Do the physics stepping
         m_world.Step(m_timeStep, m_velocityIterations, m_positionIterations);
         m_world.ClearForces();
+
+        ProcessEffects();
         
         //clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         //Draw objects that need to be drawn
         m_walls.Draw();
-        ProcessEffects();
+
         //Ships store/draw their own bullets
         ProcessShips();
         
@@ -185,33 +171,32 @@ void EventHandler::ProcessShips() const
         
 }            
 
-void EventHandler::ProcessEffects() const
-{
-    /*
-    //Right now, this is for handling the "vortex" (later to be a deployable)
-    //get all "vortexes"
-    //for each vortex, go through the list of affected b2Body objects
-    //(which I guess is every non-static body)
-    b2Vec2 vortexPos = m_vortex.getCoordinates();
-    //get the list of box2D bodies from the world.
 
-    //Start with a Box2D type, to do the math, convert it to 
-    //a GLM type to do the normalizing,
-    //then back to Box2D to apply the force
-    b2Body* pBody = m_world.GetBodyList();
-    while(pBody)
+void EventHandler::ProcessEffects()
+{
+
+    //Handle all the collisions that occurred
+    if(!m_collisionSet.empty())
     {
-        if(pBody->IsActive())
+        CollisionSet::iterator iter = m_collisionSet.begin();
+        for(;iter != m_collisionSet.end(); ++iter)
         {
-            b2Vec2 direction = (vortexPos - pBody->GetWorldCenter());
-            glm::vec2 glmvec(direction.x, direction.y);
-            glmvec = glm::normalize(glmvec);
-            glmvec *= 2.0f;
-            pBody->ApplyForceToCenter(b2Vec2(glmvec.x, glmvec.y),true);
+            std::pair<b2Body*, b2Body*> collisionPair =
+                (*iter);
+            void *pUserData = collisionPair.first->GetUserData();
+            if(pUserData)
+            {
+                static_cast<DestroyableIntfContainer*>(pUserData)->pDestroyable->DestroyObject();
+            }
+            pUserData = collisionPair.second->GetUserData();
+            if(pUserData)
+            {
+                static_cast<DestroyableIntfContainer*>(pUserData)->pDestroyable->DestroyObject();
+            }
+            
         }
-        pBody=pBody->GetNext();
+        m_collisionSet.clear();
     }
-    */
 }
 
 
@@ -229,4 +214,102 @@ void EventHandler::ButtonPushed(int controller, int buttons)
     m_templateEvent.user.code = buttons;
     m_templateEvent.user.data1 = m_ships[controller];
     SDL_PushEvent(&m_templateEvent);
+}
+
+uint32 EventHandler::KeyDown(SDL_Scancode scankeycode) const
+{
+
+    uint32 command = 0;
+    switch(scankeycode)
+    {
+        case SDL_SCANCODE_Q: //Stop the ship exactly where it is,
+        case SDL_SCANCODE_U: //Stop the ship exactly where it is,
+            command |= SHIP_STOP;
+            break;
+        case SDL_SCANCODE_R: //Reset to 0 position
+        case SDL_SCANCODE_P: //Reset to 0 position
+            command |= SHIP_RESET;
+            break;
+        case SDL_SCANCODE_A: //left
+        case SDL_SCANCODE_J: //left
+            command |= SHIP_CCW;
+            break;
+        case SDL_SCANCODE_D: //right
+        case SDL_SCANCODE_L: //right
+            command |= SHIP_CW;
+            break;
+        case SDL_SCANCODE_W: //up
+        case SDL_SCANCODE_I: //up
+            command |= SHIP_FORWARD;
+            break;
+        case SDL_SCANCODE_S: //shoot
+        case SDL_SCANCODE_K: //shoot
+            command |= SHIP_SHOOT;
+            break;
+        case SDL_SCANCODE_E: //bomb
+        case SDL_SCANCODE_O: //bomb
+            command |= SHIP_BOMB;
+            break;
+        default:
+            //do nothing
+            break;
+    }
+    return command;
+}
+
+
+uint32 EventHandler::KeyUp(SDL_Scancode scankeycode) const
+{
+    uint32 command = 0;
+    switch(scankeycode)
+    {
+        case SDL_SCANCODE_Q: //Stop the ship exactly where it is,
+        case SDL_SCANCODE_U: //Stop the ship exactly where it is,
+            command &= ~SHIP_STOP;
+            break;
+        case SDL_SCANCODE_R: //Reset to 0 position
+        case SDL_SCANCODE_P: //Reset to 0 position
+            command &= ~SHIP_RESET;
+            break;
+        case SDL_SCANCODE_A: //left
+        case SDL_SCANCODE_J: //left
+            command &= ~SHIP_CCW;
+            break;
+        case SDL_SCANCODE_D: //right
+        case SDL_SCANCODE_L: //right
+            command &= ~SHIP_CW;
+            break;
+        case SDL_SCANCODE_W: //up
+        case SDL_SCANCODE_I: //up
+            command &= ~SHIP_FORWARD;
+            break;
+        case SDL_SCANCODE_S: //shoot
+        case SDL_SCANCODE_K: //shoot
+            command &= ~SHIP_SHOOT;
+            break;
+        case SDL_SCANCODE_E: //bomb
+        case SDL_SCANCODE_O: //bomb
+            command &= ~SHIP_BOMB;
+            break;
+        default:
+            //do nothing
+            break;
+    };
+    return command;
+}
+
+
+//Put anything that collided into a set
+void EventHandler::CollisionHappened(b2Body* bodyA, b2Body* bodyB)
+{
+    //order the pairs that go in so that there can be no duplicates
+    //with just the order changed.
+    if(bodyA < bodyB)
+    {
+        m_collisionSet.insert(std::pair<b2Body*,b2Body*>(bodyA,bodyB));
+    }
+    else
+    {
+        m_collisionSet.insert(std::pair<b2Body*,b2Body*>(bodyB,bodyA));
+    }
 }

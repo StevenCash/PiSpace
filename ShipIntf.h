@@ -1,5 +1,6 @@
 #ifndef SHIPINTF_H
 #define SHIPINTF_H
+
 #include <Box2D/Box2D.h>
 #include <vector>
 
@@ -10,6 +11,8 @@
 #define SHIP_STOP    0x00000010
 #define SHIP_RESET   0x00000020
 #define SHIP_BOMB    0x00000040
+
+class Bullet;
 
 class ShipIntf
 {
@@ -23,7 +26,8 @@ public:
     //take a but field of controls and store whatever is needed for
     //future processing
     virtual void ProcessInput(int commands) = 0;
-
+    
+    virtual void AddBullet(Bullet*) = 0;
 private:
 };
 

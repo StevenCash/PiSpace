@@ -6,7 +6,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
 
-
 //Setup statics
 int Ship::index = 0;
 const glm::mat4 Ship::m_projMat(glm::ortho(-10.0f,10.0f,-10.0f,10.0f));
@@ -20,11 +19,16 @@ Ship::Ship(b2World& world):
     m_bForceCCW(false),
     m_bForceCW(false),
     m_bForceForward(false),
-    m_bullet(world,m_index),
+    m_bullet1(world,this,m_index),
+    m_bullet2(world,this,m_index),
+    m_bullet3(world,this,m_index),
     m_startX(0.0f),
     m_startY(0.0f),
     m_vortex(world)
 {
+    m_bullets.push_back(&m_bullet1);
+    m_bullets.push_back(&m_bullet2);
+    m_bullets.push_back(&m_bullet3);
     //calculate a start position
     switch(m_index)
     {
@@ -44,10 +48,13 @@ Ship::Ship(b2World& world):
         std::cerr << "index out of range" << std::endl;
         break;
     }
+
+    m_destroyableContainer.pDestroyable = this;
     //Set up the object for Box2D
     b2BodyDef bodyDef;
     bodyDef.type = b2_dynamicBody;
     bodyDef.position.Set(m_startX,m_startY); //trying to start at the center
+    bodyDef.userData = &m_destroyableContainer;
     m_pBody = m_worldRef.CreateBody(&bodyDef);
     b2PolygonShape shipShape;
 
@@ -229,7 +236,10 @@ void Ship::Draw()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glUseProgram(0);
 
-    m_bullet.Draw();
+    
+    m_bullet1.Draw();
+    m_bullet2.Draw();
+    m_bullet3.Draw();
     m_vortex.Draw();
 }
 
@@ -249,9 +259,15 @@ void Ship::ProcessInput(int commands)
     m_bForceCW = (commands & SHIP_CW);
     m_bForceForward = (commands & SHIP_FORWARD);
     
+
     if(commands & SHIP_SHOOT)
     {
-        m_bullet.Fire(m_pBody->GetTransform());
+        if(!m_bullets.empty())
+        {
+            Bullet* pBullet = m_bullets.front();
+            m_bullets.pop_front();
+            pBullet->Fire(m_pBody->GetTransform());
+        }
     }
     
     if(commands & SHIP_STOP)
@@ -301,3 +317,15 @@ void Ship::DoCommands()
 
 
 
+void Ship::AddBullet(Bullet* pBullet)
+{
+    m_bullets.push_back(pBullet);
+}
+
+
+
+    //override of DestroyableIntf function
+void Ship::DestroyObject()
+{
+    std::cout << "Ship" << std::endl;
+}

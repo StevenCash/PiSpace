@@ -4,15 +4,16 @@
 #include "GLHeader.h"
 
 #include <Box2D/Box2D.h>
-#include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
 #include <vector>
+#include <deque>
 #include "Bullet.h"
 #include "Vortex.h"
 #include "ShipIntf.h"
+#include "DestroyableIntf.h"
 
 #define RAD2DEG(x) ((x) * 57.2957795f)
 
-class Ship : public ShipIntf
+class Ship : public ShipIntf, public DestroyableIntf
 {
     struct TempStruct
     {
@@ -35,7 +36,12 @@ public:
     //turn a bit mapped field into a set of commands to be handled
     //during DoCommands
     void ProcessInput(int commands);
-    
+    void AddBullet(Bullet* pBullet);
+
+    //override of DestroyableIntf function
+    virtual void DestroyObject();
+
+
 private:
     static const glm::mat4 m_projMat;
     glm::vec3 m_rotateAxis;
@@ -67,12 +73,21 @@ private:
     bool m_bForceCW; //right
     bool m_bForceForward; // Forward thrust
 
-    Bullet m_bullet;
+    Bullet m_bullet1;
+    Bullet m_bullet2;
+    Bullet m_bullet3;
+    
+    std::deque<Bullet*> m_bullets;
 
     float m_startX;
     float m_startY;
 
     Vortex m_vortex;
+
+    //Container to hold the interface to pass to
+    //Box2D as UserData, since it's stores it as a void
+    //and will lose most of its vtable
+    DestroyableIntfContainer m_destroyableContainer;
 };
 
 #endif //SHIP_H

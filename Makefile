@@ -23,6 +23,8 @@ EventHandler.o \
 Bullet.o \
 Walls.o \
 Vortex.o \
+ContactListener.o \
+
 
 FLAGS=-march=armv6 -mfpu=vfp -mfloat-abi=hard -DRPI
 

@@ -14,16 +14,20 @@ GLuint Bullet::m_vertexbuffer = 0;
 GLuint Bullet::m_colorbuffer = 0;
 GLuint Bullet::m_numVertices = 0;
 
-Bullet::Bullet(b2World& world,uint32 index):
+Bullet::Bullet(b2World& world, ShipIntf *pShip, uint32 index):
     m_pBody(0),
     m_world(world),
-    m_radius(0.1f)
+    m_radius(0.1f),
+    m_pShip(pShip),
+    m_timestamp(0)
 {
+    m_destroyableContainer.pDestroyable = this;
+
     b2BodyDef bulletBodyDef;
     bulletBodyDef.bullet = true; //does it bounce?
     bulletBodyDef.active = false; //is it an active physics object
     bulletBodyDef.type = b2_dynamicBody;
-
+    bulletBodyDef.userData = &m_destroyableContainer;
     m_pBody = m_world.CreateBody(&bulletBodyDef);
 
     b2CircleShape bulletShape;
@@ -179,6 +183,7 @@ void Bullet::Draw()
             m_pBody->SetLinearVelocity(b2Vec2(0.0f,0.0f));
             m_pBody->SetAngularVelocity(0.0f);
             m_pBody->SetActive(false);
+            m_pShip->AddBullet(this);
         }
         else
         {
@@ -232,4 +237,12 @@ void Bullet::Draw()
             glDisableVertexAttribArray ( colorAttribute ) ;
         }
     }
+}
+
+
+void Bullet::DestroyObject()
+{
+    std::cout << "Bullet" << std::endl;
+//    m_pBody->SetActive(false);
+//    m_pShip->AddBullet(this);
 }
