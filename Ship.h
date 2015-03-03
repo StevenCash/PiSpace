@@ -51,6 +51,9 @@ private:
     GLuint m_colorBufferHandleArray[1];    
 
     static GLuint m_shaderProgram;
+    static uint32 m_soundIndex;
+    static bool m_bSoundLoaded;
+
     GLuint m_indexBuffer;
     GLuint m_numIndices;
     GLfloat m_angle;

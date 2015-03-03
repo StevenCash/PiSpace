@@ -6,6 +6,7 @@
 #include "Walls.h"
 #include "DestroyableIntf.h"
 #include "TraceLogger.h"
+#include "Ships.h"
 
 EventHandler::EventHandler(SDL_Window *pWindow, b2World& world, Ships& ships, Walls& walls):
     m_bQuit(false),
@@ -64,7 +65,7 @@ void EventHandler::EventLoop()
                         case SDL_SCANCODE_I: //up
                         case SDL_SCANCODE_K: //shoot
                         case SDL_SCANCODE_O: //bomb
-                            if(m_ships.size() > 1)
+                            if(m_ships.Length() > 1)
                             {
                                 pShip = m_ships[1];
                             }
@@ -101,7 +102,7 @@ void EventHandler::EventLoop()
                         case SDL_SCANCODE_I: //up
                         case SDL_SCANCODE_K: //shoot
                         case SDL_SCANCODE_O: //bomb
-                            if(m_ships.size() > 1)
+                            if(m_ships.Length() > 1)
                             {
                                 pShip = m_ships[1];
                             }
@@ -161,17 +162,16 @@ EventHandler::~EventHandler()
 /*******************************************/
 void EventHandler::ProcessShips() const
 {
-    for(Ships::const_iterator iter = m_ships.begin(), endIter = m_ships.end();
-        iter != endIter;
-        ++iter)
+    ShipIntf *pShip = 0;
+    while ((pShip = m_ships.Next()))
     {
-        (*iter)->DoCommands();
-        (*iter)->Draw();
-    }
-        
+        pShip->DoCommands();
+        pShip->Draw();
+    }        
 }            
 
 
+/*******************************************/
 void EventHandler::ProcessEffects()
 {
 

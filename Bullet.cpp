@@ -119,14 +119,14 @@ Bullet::Bullet(b2World& world, ShipIntf *pShip, uint32 index):
         //Setup COLOR attributes
         GLfloat colorArray[numValues];
 
-        colorArray[0]=red;
-        colorArray[1]= green;
-        colorArray[2]= blue;
+        colorArray[0]=1.0f;
+        colorArray[1]=1.0f;
+        colorArray[2]=1.0f;
         for(GLuint x=3; x < numValues; x+=3)
         {
-            colorArray[x]= 1.0f;
-            colorArray[x+1]= 1.0f;
-            colorArray[x+2]= 1.0f;
+            colorArray[x]= red;
+            colorArray[x+1]= green;
+            colorArray[x+2]= blue;
         }
   
         glGenBuffers(1,&m_colorbuffer);
@@ -242,7 +242,6 @@ void Bullet::Draw()
 
 void Bullet::DestroyObject()
 {
-    std::cout << "Bullet" << std::endl;
-//    m_pBody->SetActive(false);
-//    m_pShip->AddBullet(this);
+    m_pBody->SetActive(false);
+    m_pShip->AddBullet(this);
 }

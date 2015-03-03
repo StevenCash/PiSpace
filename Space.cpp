@@ -1,6 +1,7 @@
 //SDL (2)
 #include "GLHeader.h"
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
 
 #include <iostream>
 #include <fstream>
@@ -20,9 +21,11 @@
 #include "EventHandler.h"
 #include "Walls.h"
 
+#include "ContactListener.h"
+#include "ConnectionThread.h"
 
 //function prototype
-void setupDisplay(SDL_Window *&pWindow, SDL_GLContext& context, int screenx=1920, int screeny=1080);
+void setupDisplay(SDL_Window *&pWindow, SDL_GLContext& context, int screenx=640, int screeny=480);
 
 
 
@@ -42,7 +45,7 @@ int main(int argc, char *argv[])
     SDL_Window *pWindow = 0;
     SDL_GLContext glContext;
 
-    setupDisplay(pWindow,glContext,1920,1080);
+    setupDisplay(pWindow,glContext);
 
 //World for use with Box2D with no gravity
 //positive 10.0 is up
@@ -51,8 +54,9 @@ int main(int argc, char *argv[])
 //negative is left
     b2World World(b2Vec2(0.0f,0.0f));
 
+
     //Create ships, event handler, and controllers (wiimotes)
-    Ships shipVector;
+    Ships ships(World);
 
     //Put some boundries on the world
     Walls myWalls(World);
@@ -60,18 +64,24 @@ int main(int argc, char *argv[])
 #ifdef RPI
     std::vector<Wiimote*> wiimotes;
 #endif
+    ConnectionThread connections(&ships);
+    connections.Activate();
 
     //Instantiate main event handler/control loop object
-    EventHandler eventHandler(pWindow,World,shipVector, myWalls);
+    EventHandler eventHandler(pWindow,World,ships, myWalls);
 
     for(int i =0; i < argc; ++i)
     {
-        shipVector.push_back(new Ship(World));
+        ships.AddShip();
 #ifdef RPI
         wiimotes.push_back(new Wiimote(&eventHandler));
 #endif
     }
 
+
+    //Object to listen for Box2D collision events
+    ContactListener myListener(eventHandler);
+    World.SetContactListener(&myListener);
 
     //Run the main loop
     eventHandler.EventLoop();
@@ -92,27 +102,35 @@ int main(int argc, char *argv[])
 //Basic SDL2 setup of a screen for OpenGL
 void setupDisplay(SDL_Window*& pWindow, SDL_GLContext& context, int screenx, int screeny)
 {
-    if ( SDL_Init ( SDL_INIT_VIDEO ) < 0 ) {
+    //Initialize SDL video and sound
+    if ( SDL_Init ( SDL_INIT_VIDEO | SDL_INIT_AUDIO ) < 0 ) {
         std::cerr << "Unable to initialize SDL " << std::endl;
         std::cerr << SDL_GetError() << std::endl;
         return ;
     }
-#ifdef WINDOWS
-    uint32 FLAGS = SDL_WINDOW_OPENGL;
-#else
-    uint32 FLAGS = SDL_WINDOW_OPENGL|SDL_WINDOW_FULLSCREEN;
-#endif
     
+    //Initialize the SDL_mixer for sound
+    if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096) < 0) {
+        std::cerr << "Error initializing MIXER" << std::endl;
+        return;
+    }    
+
+    
+#ifdef WINDOWS
+    uint32 FLAGS = SDL_WINDOW_OPENGL;    
+    SDL_GL_SetAttribute ( SDL_GL_CONTEXT_MAJOR_VERSION , 3 ) ;
+    SDL_GL_SetAttribute ( SDL_GL_CONTEXT_MINOR_VERSION , 0 ) ;
+#elif RPI
+    uint32 FLAGS = SDL_WINDOW_OPENGL|SDL_WINDOW_FULLSCREEN;
     SDL_GL_SetAttribute ( SDL_GL_CONTEXT_EGL , 1 ) ;
     SDL_GL_SetAttribute ( SDL_GL_CONTEXT_MAJOR_VERSION , 2 );
     SDL_GL_SetAttribute ( SDL_GL_CONTEXT_MINOR_VERSION , 0 ) ;
+#endif
+
     SDL_GL_SetAttribute ( SDL_GL_DOUBLEBUFFER , 1 ) ;
- //   SDL_GL_SetAttribute ( SDL_GL_DEPTH_SIZE , 24 ) ;
-    if ( ( pWindow = SDL_CreateWindow ( "PiSpace " ,
-            SDL_WINDOWPOS_UNDEFINED, 
-            SDL_WINDOWPOS_UNDEFINED, 
-            screenx , screeny,
-            FLAGS ) ) == NULL ) {
+    SDL_GL_SetAttribute ( SDL_GL_DEPTH_SIZE , 24 ) ;
+
+    if ( ( pWindow = SDL_CreateWindow ( "Space " , 100 , 100 , screenx , screeny, FLAGS ) ) == NULL ) {
         std::cerr << "Unable to open window" << std::endl;
         std::cerr << SDL_GetError() << std::endl;
         return ;
@@ -133,8 +151,8 @@ void setupDisplay(SDL_Window*& pWindow, SDL_GLContext& context, int screenx, int
 #endif
     glViewport(0,0,screenx,screeny);
 
-//    glEnable(GL_DEPTH_TEST);
-//    glDepthFunc(GL_LESS);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     

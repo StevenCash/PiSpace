@@ -3,6 +3,8 @@
 
 #include "Ship.h"
 #include "ShaderUtil.h"
+#include "SoundBank.h"
+
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
 
@@ -10,6 +12,8 @@
 int Ship::index = 0;
 const glm::mat4 Ship::m_projMat(glm::ortho(-10.0f,10.0f,-10.0f,10.0f));
 GLuint Ship::m_shaderProgram = 0;
+uint32 Ship::m_soundIndex = 0;
+bool Ship::m_bSoundLoaded = false;
 
 Ship::Ship(b2World& world):
     m_rotateAxis(glm::vec3(0.0f,0.0f,1.0f)),
@@ -180,6 +184,14 @@ Ship::Ship(b2World& world):
 
     //release the buffers
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+
+    //Load the sounds for the ship
+    if(!m_bSoundLoaded)
+    {
+        m_soundIndex = SoundBank::SoundControl.LoadSoundFile("ds_china.wav");
+    }
+
 }
 
 //Main drawing function for this Ship
@@ -327,5 +339,5 @@ void Ship::AddBullet(Bullet* pBullet)
     //override of DestroyableIntf function
 void Ship::DestroyObject()
 {
-    std::cout << "Ship" << std::endl;
+    SoundBank::SoundControl.Play(m_soundIndex);
 }

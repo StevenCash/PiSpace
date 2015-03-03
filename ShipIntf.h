@@ -31,6 +31,5 @@ public:
 private:
 };
 
-typedef std::vector<ShipIntf*> Ships;
 
 #endif //SHIP_H

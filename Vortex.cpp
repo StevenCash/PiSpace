@@ -6,12 +6,13 @@
 const glm::mat4 Vortex::m_projMat(glm::ortho(-10.0f,10.0f,-10.0f,10.0f));
 
 Vortex::Vortex(b2World& world)
-    : m_world(world),
-     m_shaderProgram(0),
-     m_vortexBuffer(0),
-     m_timestamp(0),
-     m_coords(0.0f,0.0f),
-     m_bActive(false)
+    : m_kLifetime(10000),
+      m_world(world),
+      m_shaderProgram(0),
+      m_vortexBuffer(0),
+      m_timestamp(0),
+      m_coords(0.0f,0.0f),
+      m_bActive(false)
 {
         //Init the shader program to use
     if(!m_shaderProgram)
@@ -49,7 +50,7 @@ void Vortex::Draw()
     {
         uint32 curTime = SDL_GetTicks();
         uint32 aliveTime = curTime - m_timestamp;
-        if(curTime - m_timestamp > 10000)
+        if(curTime - m_timestamp > m_kLifetime)
         {
             m_bActive = false;
             return;
@@ -100,7 +101,7 @@ void Vortex::Draw()
         GLuint locationMVP = glGetUniformLocation(m_shaderProgram,"mvpMatrix");
         GLuint locationFade = glGetUniformLocation(m_shaderProgram,"uFade");
         
-        GLfloat fade=1.0f - (float(aliveTime)/10000.0f);
+        GLfloat fade=1.0f - (float(aliveTime)/float(m_kLifetime));
 
         glUniform1f(locationFade, fade);
     

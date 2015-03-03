@@ -6,6 +6,7 @@
 
 #include "ControllerIntf.h"
 #include "Vortex.h"
+#include "Ships.h"
 #include "ShipIntf.h"
 
 

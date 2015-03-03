@@ -16,6 +16,7 @@ public:
     void setActive(bool active);
     bool getActive() const;
 private:
+    const uint32 m_kLifetime;
     b2World& m_world;
     GLuint m_shaderProgram;
     GLuint m_vortexBuffer;
