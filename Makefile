@@ -25,6 +25,7 @@ EventHandler.o \
 Bullet.o \
 Walls.o \
 Vortex.o \
+Explosion.o \
 ContactListener.o \
 SoundBank.o \
 Stars.o \

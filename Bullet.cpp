@@ -11,9 +11,9 @@
 const glm::mat4 Bullet::m_projMat(glm::ortho(-10.0f,10.0f,-10.0f,10.0f));
 GLuint Bullet::m_shaderProgram = 0;
 GLuint Bullet::m_vertexbuffer = 0;
-GLuint Bullet::m_colorbuffer = 0;
 GLuint Bullet::m_numVertices = 0;
 
+/***********************************************/
 Bullet::Bullet(b2World& world, ShipIntf *pShip, uint32 index):
     m_pBody(0),
     m_world(world),
@@ -85,7 +85,18 @@ Bullet::Bullet(b2World& world, ShipIntf *pShip, uint32 index):
         shaderList.push_back(createShaderFromFile(GL_FRAGMENT_SHADER, "BulletFragment.glsl"));
         m_shaderProgram = createShaderProgram(shaderList);
 
+        //done with the shaders, so delete them
+        //do this here instead of in createShaderProgram so that a shader
+        //can be reused without rebuilding it
+        std::for_each(shaderList.begin(), shaderList.end(), glDeleteShader);
+
+
+    }
+    
+    if(m_shaderProgram)
+    {
 //Setup Position ATTRIBUTES
+
         GLuint numOutsideVertices=16;
         m_numVertices=numOutsideVertices+2;
         GLuint numValues=m_numVertices*3;
@@ -109,7 +120,6 @@ Bullet::Bullet(b2World& world, ShipIntf *pShip, uint32 index):
         f[numValues-2] = f[4];
         f[numValues-1] = f[5];
 
-  
         glGenBuffers ( 1 , &m_vertexbuffer ) ;
         glBindBuffer ( GL_ARRAY_BUFFER , m_vertexbuffer ) ;
         glBufferData ( GL_ARRAY_BUFFER , sizeof ( f ) , f , GL_STATIC_DRAW ) ;
@@ -128,7 +138,6 @@ Bullet::Bullet(b2World& world, ShipIntf *pShip, uint32 index):
             colorArray[x+1]= green;
             colorArray[x+2]= blue;
         }
-  
         glGenBuffers(1,&m_colorbuffer);
         glBindBuffer(GL_ARRAY_BUFFER, m_colorbuffer);
         glBufferData(GL_ARRAY_BUFFER, sizeof(colorArray), colorArray, GL_STATIC_DRAW);
@@ -139,7 +148,7 @@ Bullet::Bullet(b2World& world, ShipIntf *pShip, uint32 index):
 
 }
 
-
+/***********************************************/
 Bullet::~Bullet()
 {
     m_world.DestroyBody(m_pBody);
@@ -172,7 +181,7 @@ void Bullet::Fire(const b2Transform& xf)
 }
 
 
-
+/***********************************************/
 void Bullet::Draw()
 {
     if(m_pBody->IsActive())
@@ -206,7 +215,7 @@ void Bullet::Draw()
 
             //Setup the color(s)!
             glBindBuffer ( GL_ARRAY_BUFFER , m_colorbuffer ) ;
-            GLuint colorAttribute = glGetAttribLocation(m_shaderProgram, "vColor");
+            GLuint colorAttribute = glGetAttribLocation(m_shaderProgram, "aColor");
             glEnableVertexAttribArray(colorAttribute);
             glVertexAttribPointer (
                 colorAttribute , // attribute 1. 
@@ -240,6 +249,7 @@ void Bullet::Draw()
 }
 
 
+/***********************************************/
 void Bullet::DestroyObject()
 {
     m_pBody->SetActive(false);

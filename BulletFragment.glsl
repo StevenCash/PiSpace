@@ -1,9 +1,8 @@
-#version 100
-varying vec3 vColorV;
+varying vec3 vColor;
 varying float vFade;
 void main()
 {
-   vec4 color = vec4(vColorV,1.0);
+   vec4 color = vec4(vColor,1.0);
    color.x*=vFade;
    color.y*=vFade;
    color.z*=vFade;

@@ -8,6 +8,8 @@
 #include "TraceLogger.h"
 #include "Ships.h"
 
+#include "Explosion.h"
+
 EventHandler::EventHandler(SDL_Window *pWindow, b2World& world, Ships& ships, Walls& walls):
     m_bQuit(false),
     m_pWindow(pWindow),
@@ -29,6 +31,7 @@ EventHandler::EventHandler(SDL_Window *pWindow, b2World& world, Ships& ships, Wa
 //Main Event Loop
 void EventHandler::EventLoop()
 {
+    Explosion ex;
     SDL_Event event;
     while(!m_bQuit)
     {
@@ -45,6 +48,9 @@ void EventHandler::EventLoop()
                     uint32 command = 0;
                     switch(event.key.keysym.scancode)
                     {
+                        case SDL_SCANCODE_B:
+                            ex.setActive(true);
+                            break;
                         case SDL_SCANCODE_X:
                             m_bQuit=true;
                             break;
@@ -140,7 +146,7 @@ void EventHandler::EventLoop()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         //Draw objects that need to be drawn
         m_walls.Draw();
-
+        ex.Draw();
         //Ships store/draw their own bullets
         ProcessShips();
         

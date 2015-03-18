@@ -15,7 +15,7 @@ class Bullet : public DestroyableIntf
 {
 private:
     static GLuint m_vertexbuffer;
-    static GLuint m_colorbuffer;
+    GLuint m_colorbuffer;
     static GLuint m_numVertices;
 
     b2Body *m_pBody;
@@ -24,6 +24,7 @@ private:
 
     static const glm::mat4 m_projMat;
     static GLuint m_shaderProgram;
+    GLuint m_localShader;
 
     ShipIntf* m_pShip;
     uint32 m_timestamp;

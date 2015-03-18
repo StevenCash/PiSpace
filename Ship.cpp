@@ -19,17 +19,18 @@ Ship::Ship(b2World& world):
     m_rotateAxis(glm::vec3(0.0f,0.0f,1.0f)),
     m_angle(0.0f),
     m_worldRef(world),
-    m_index(index++),
+    m_index(index),
     m_bForceCCW(false),
     m_bForceCW(false),
     m_bForceForward(false),
-    m_bullet1(world,this,m_index),
-    m_bullet2(world,this,m_index),
-    m_bullet3(world,this,m_index),
+    m_bullet1(world,this,index),
+    m_bullet2(world,this,index),
+    m_bullet3(world,this,index),
     m_startX(0.0f),
     m_startY(0.0f),
     m_vortex(world)
 {
+    ++index;
     m_bullets.push_back(&m_bullet1);
     m_bullets.push_back(&m_bullet2);
     m_bullets.push_back(&m_bullet3);
@@ -172,7 +173,6 @@ Ship::Ship(b2World& world):
         //front
         0,1,2,
         2,3,0
-
     };
     
     //store the number of indices in the index buffer
@@ -184,7 +184,6 @@ Ship::Ship(b2World& world):
 
     //release the buffers
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
 
     //Load the sounds for the ship
     if(!m_bSoundLoaded)
