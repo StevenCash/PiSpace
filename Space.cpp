@@ -122,6 +122,8 @@ void setupDisplay(SDL_Window*& pWindow, SDL_GLContext& context, int screenx, int
     SDL_GL_SetAttribute ( SDL_GL_CONTEXT_MINOR_VERSION , 0 ) ;
 #elif RPI
     uint32 FLAGS = SDL_WINDOW_OPENGL|SDL_WINDOW_FULLSCREEN;
+    screenx=1920;
+    screeny=1080;
     SDL_GL_SetAttribute ( SDL_GL_CONTEXT_EGL , 1 ) ;
     SDL_GL_SetAttribute ( SDL_GL_CONTEXT_MAJOR_VERSION , 2 );
     SDL_GL_SetAttribute ( SDL_GL_CONTEXT_MINOR_VERSION , 0 ) ;

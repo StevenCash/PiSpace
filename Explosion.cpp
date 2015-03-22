@@ -4,15 +4,17 @@
 #include <SDL2/SDL.h>
 #include <list>
 #include <iostream>
+
 const glm::mat4 Explosion::m_projMat(glm::ortho(-10.0f,10.0f,-10.0f,10.0f));
 
-Explosion::Explosion()
+Explosion::Explosion(int index)
     : m_kLifetime(3000),
       m_shaderProgram(0),
       m_explosionBuffer(0),
       m_explosionColorBuffer(0),
       m_timestamp(0),
-      m_bActive(false)
+      m_bActive(false),
+      m_offset(5.0f,0.0f)
 {
         //Init the shader program to use
     if(!m_shaderProgram)
@@ -22,16 +24,49 @@ Explosion::Explosion()
         shaderList.push_back(createShaderFromFile(GL_FRAGMENT_SHADER, "ExplosionFragment.glsl"));
         m_shaderProgram = createShaderProgram(shaderList);
 
+        GLfloat red = 0.0f, green=0.0f, blue=0.0f;
+        switch(index)
+        {
+            case 0:
+            {
+                blue = 1.0f;
+                green = 0.0f;
+                red = 0.7f;
+                break;
+            }
+            case 1:
+            {
+                red = 1.0f;
+                break;
+            }
+            case 2:
+            {
+                green = 1.0f;
+                break;
+            }
+            case 3:
+            {
+                blue = 1.0f;
+                break;
+            }
+            default:
+            {
+                std::cerr << "Too many ships." << std::endl;
+                break;
+                exit(1);
+            }
+        }
+
 
         //Setup colors ********************************
         glm::vec3 colors[] =
         {
+            glm::vec3(red,green,blue),
             glm::vec3(1.0f,1.0f,1.0f),
-            glm::vec3(1.0f,0.0f,0.0f),
+            glm::vec3(red,green,blue),
+            glm::vec3(red,green,blue),
             glm::vec3(1.0f,1.0f,1.0f),
-            glm::vec3(1.0f,1.0f,1.0f),
-            glm::vec3(1.0f,0.0f,0.0f),
-            glm::vec3(1.0f,0.0f,0.0f)
+            glm::vec3(1.0f,1.0f,1.0f)
         };
         std::list<glm::vec3> colorList;
         //making 8 copies
@@ -143,6 +178,10 @@ Explosion::Explosion()
         glBufferData(GL_ARRAY_BUFFER,sizeof(vertices),vertices,GL_STATIC_DRAW);
         glBindBuffer(GL_ARRAY_BUFFER,0);
     }
+
+
+
+
 }
 
 void Explosion::Draw()
@@ -186,10 +225,13 @@ void Explosion::Draw()
 
         GLuint locationMVP = glGetUniformLocation(m_shaderProgram,"mvpMatrix");
         GLuint locationTime = glGetUniformLocation(m_shaderProgram,"uTime");
+        GLuint locationOffset = glGetUniformLocation(m_shaderProgram,"uOffset");
 
 //        0-1 over m_kLifetime seconds
         GLfloat offset=(float(aliveTime)/float(m_kLifetime));
         glUniform1f(locationTime, offset);
+
+        glUniform2fv(locationOffset,1,glm::value_ptr(m_offset));
 
         glm::mat4 modelMatrix1(1.0f);
         modelMatrix1 = m_projMat * modelMatrix1;
@@ -216,4 +258,10 @@ void Explosion::setActive(bool active)
 bool Explosion::getActive() const
 {
     return m_bActive;
+}
+
+void Explosion::setPosition(const b2Transform& xf)
+{
+    m_offset.x = xf.p.x;
+    m_offset.y = xf.p.y;
 }

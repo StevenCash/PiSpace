@@ -7,8 +7,8 @@
 #include "DestroyableIntf.h"
 #include "TraceLogger.h"
 #include "Ships.h"
-
-#include "Explosion.h"
+#include "Star.h"
+#include <sys/time.h>
 
 EventHandler::EventHandler(SDL_Window *pWindow, b2World& world, Ships& ships, Walls& walls):
     m_bQuit(false),
@@ -31,7 +31,15 @@ EventHandler::EventHandler(SDL_Window *pWindow, b2World& world, Ships& ships, Wa
 //Main Event Loop
 void EventHandler::EventLoop()
 {
-    Explosion ex;
+    struct timeval myTimeval;
+    struct timezone myTimezone;
+    gettimeofday(&myTimeval, &myTimezone);
+    srand(myTimeval.tv_usec);
+
+    Star star(-10.0f,0.0f,0.0f,10.0f); //top left
+    Star star2(0.0f, 10.0f, -10.0f,0.0f); //bot right
+    Star star3(-10.0f, 0.0f, -10.0f,0.0f); //bot left
+    Star star4(0.0f, 10.0f, 0.0f,10.0f); //top right
     SDL_Event event;
     while(!m_bQuit)
     {
@@ -44,12 +52,16 @@ void EventHandler::EventLoop()
                     break;
                 case SDL_KEYDOWN:
                 {
+                    if(event.key.repeat)
+                    {
+                        break;
+                    }
                     ShipIntf *pShip = 0;
                     uint32 command = 0;
                     switch(event.key.keysym.scancode)
                     {
                         case SDL_SCANCODE_B:
-                            ex.setActive(true);
+                            //TBD do test things
                             break;
                         case SDL_SCANCODE_X:
                             m_bQuit=true;
@@ -144,9 +156,14 @@ void EventHandler::EventLoop()
         
         //clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        star.Draw();
+        star2.Draw();
+        star3.Draw();
+        star4.Draw();
         //Draw objects that need to be drawn
         m_walls.Draw();
-        ex.Draw();
+
         //Ships store/draw their own bullets
         ProcessShips();
         

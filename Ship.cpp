@@ -20,6 +20,7 @@ Ship::Ship(b2World& world):
     m_angle(0.0f),
     m_worldRef(world),
     m_index(index),
+    m_hitCount(0),
     m_bForceCCW(false),
     m_bForceCW(false),
     m_bForceForward(false),
@@ -28,7 +29,8 @@ Ship::Ship(b2World& world):
     m_bullet3(world,this,index),
     m_startX(0.0f),
     m_startY(0.0f),
-    m_vortex(world)
+    m_vortex(world),
+    m_explosion(index)
 {
     ++index;
     m_bullets.push_back(&m_bullet1);
@@ -196,58 +198,69 @@ Ship::Ship(b2World& world):
 //Main drawing function for this Ship
 void Ship::Draw()
 {
-     glUseProgram(m_shaderProgram);
+    if(m_pBody->IsActive())
+    {
+        glUseProgram(m_shaderProgram);
 
-     //get a handle for the rotation uniform;
-     GLuint locationMVP = glGetUniformLocation(m_shaderProgram,"mvpMatrix");
-     glm::mat4 modelMatrix(1.0f);
+        //get a handle for the rotation uniform;
+        GLuint locationMVP = glGetUniformLocation(m_shaderProgram,"mvpMatrix");
+        glm::mat4 modelMatrix(1.0f);
 
-     //glm translation vector
-     b2Vec2 position = m_pBody->GetWorldCenter();
+        //glm translation vector
+        b2Vec2 position = m_pBody->GetWorldCenter();
      
-     //box uses radians, GLM uses degrees
-     float angleDeg = RAD2DEG(m_pBody->GetAngle());
+        //box uses radians, GLM uses degrees
+        float angleDeg = RAD2DEG(m_pBody->GetAngle());
 
-     //Translate then Rotate
-     modelMatrix = 
-         glm::translate(modelMatrix, glm::vec3(position.x, position.y, 0.0f)); 
-     modelMatrix = 
-         glm::rotate(modelMatrix, angleDeg , m_rotateAxis);    
+        //Translate then Rotate
+        modelMatrix = 
+            glm::translate(modelMatrix, glm::vec3(position.x, position.y, 0.0f)); 
+        modelMatrix = 
+            glm::rotate(modelMatrix, angleDeg , m_rotateAxis);    
 
-     //skipping the view matrix, because we don't need it
-     glm::mat4 mvpMat = m_projMat * modelMatrix;
+        //skipping the view matrix, because we don't need it
+        glm::mat4 mvpMat = m_projMat * modelMatrix;
      
-     glUniformMatrix4fv(locationMVP, 1, GL_FALSE, glm::value_ptr(mvpMat));
-    //get a handle to the vPosition attribute of the shader
-    //this can/should be done right after linking the shader and
-    //stored in a member variable
-    //Should probably do that with all the shader program handles
-    GLuint vertexAttribute = glGetAttribLocation(m_shaderProgram,"vPosition");
-    //bind the buffer that we're going to get the attributes from
-    glBindBuffer(GL_ARRAY_BUFFER, m_vertexBufferHandleArray[0]);
+        glUniformMatrix4fv(locationMVP, 1, GL_FALSE, glm::value_ptr(mvpMat));
+        //get a handle to the vPosition attribute of the shader
+        //this can/should be done right after linking the shader and
+        //stored in a member variable
+        //Should probably do that with all the shader program handles
+        GLuint vertexAttribute = glGetAttribLocation(m_shaderProgram,"vPosition");
+        //bind the buffer that we're going to get the attributes from
+        glBindBuffer(GL_ARRAY_BUFFER, m_vertexBufferHandleArray[0]);
 
-    glEnableVertexAttribArray(vertexAttribute);
-    glVertexAttribPointer(vertexAttribute, 4, GL_FLOAT, GL_FALSE, sizeof(TempStruct), 0);
+        glEnableVertexAttribArray(vertexAttribute);
+        glVertexAttribPointer(vertexAttribute, 4, GL_FLOAT, GL_FALSE, sizeof(TempStruct), 0);
 
  
-    GLuint colorAttribute = glGetAttribLocation(m_shaderProgram, "vColor");
-    glVertexAttribPointer(colorAttribute, 4, GL_FLOAT, GL_FALSE, sizeof(TempStruct), (void*)(sizeof(GLfloat)*4));
-    glEnableVertexAttribArray(colorAttribute);
+        GLuint colorAttribute = glGetAttribLocation(m_shaderProgram, "vColor");
+        glVertexAttribPointer(colorAttribute, 4, GL_FLOAT, GL_FALSE, sizeof(TempStruct), (void*)(sizeof(GLfloat)*4));
+        glEnableVertexAttribArray(colorAttribute);
 
-   //must bind this before glDrawElements
-    //or give glDrawElements an array of indices
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBuffer);
+        //must bind this before glDrawElements
+        //or give glDrawElements an array of indices
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBuffer);
     
-    glDrawElements(GL_TRIANGLES,m_numIndices,GL_UNSIGNED_BYTE,0);
+        glDrawElements(GL_TRIANGLES,m_numIndices,GL_UNSIGNED_BYTE,0);
 
-    //Cleanup
-    glDisableVertexAttribArray(vertexAttribute);
-    glDisableVertexAttribArray(colorAttribute);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glUseProgram(0);
+        //Cleanup
+        glDisableVertexAttribArray(vertexAttribute);
+        glDisableVertexAttribArray(colorAttribute);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        glUseProgram(0);
 
-    
+    }
+    else
+    {
+        m_explosion.Draw();
+        if(!m_explosion.getActive())
+        {
+            respawn();
+        }
+    }
+
     m_bullet1.Draw();
     m_bullet2.Draw();
     m_bullet3.Draw();
@@ -338,5 +351,20 @@ void Ship::AddBullet(Bullet* pBullet)
     //override of DestroyableIntf function
 void Ship::DestroyObject()
 {
-    SoundBank::SoundControl.Play(m_soundIndex);
+    ++m_hitCount;
+    if(m_hitCount > 2)
+    {
+        SoundBank::SoundControl.Play(m_soundIndex);
+        m_pBody->SetActive(false);
+        m_explosion.setPosition(m_pBody->GetTransform());
+        m_explosion.setActive(true);
+        m_hitCount = 0;
+    }
+}
+
+void Ship::respawn()
+{
+    m_pBody->SetLinearVelocity(b2Vec2(0.0f,0.0f));
+    m_pBody->SetAngularVelocity(0.0f);
+    m_pBody->SetActive(true);
 }

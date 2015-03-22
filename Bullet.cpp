@@ -89,8 +89,6 @@ Bullet::Bullet(b2World& world, ShipIntf *pShip, uint32 index):
         //do this here instead of in createShaderProgram so that a shader
         //can be reused without rebuilding it
         std::for_each(shaderList.begin(), shaderList.end(), glDeleteShader);
-
-
     }
     
     if(m_shaderProgram)
@@ -164,7 +162,6 @@ void Bullet::Fire(const b2Transform& xf)
     //Only do this if the bullet is not active.
     if(! m_pBody->IsActive())
     {
-        m_pBody->SetActive(true);
         //get a direction and a position to start from
         //This should probably be based on the transform
         //from the ship
@@ -173,6 +170,7 @@ void Bullet::Fire(const b2Transform& xf)
         b2Transform bXf=xf;
         bXf.p.SetZero();
         b2Vec2 velocity = b2Mul(bXf,b2Vec2(0.0f, 50.0f));
+        m_pBody->SetActive(true);
         m_pBody->SetLinearVelocity(velocity);
         
         //Get/Set the starting timestamp
@@ -201,7 +199,7 @@ void Bullet::Draw()
             glUseProgram ( m_shaderProgram ) ;
 
             //setup the vertices!
-            GLuint positionAttribute = glGetAttribLocation(m_shaderProgram,"vPosition");
+            GLuint positionAttribute = glGetAttribLocation(m_shaderProgram,"aPosition");
             glEnableVertexAttribArray ( positionAttribute ) ;
             glBindBuffer ( GL_ARRAY_BUFFER , m_vertexbuffer ) ;
             glVertexAttribPointer (

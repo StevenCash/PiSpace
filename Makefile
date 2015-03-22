@@ -28,7 +28,7 @@ Vortex.o \
 Explosion.o \
 ContactListener.o \
 SoundBank.o \
-Stars.o \
+Star.o \
 ConnectionThread.o \
 
 

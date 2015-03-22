@@ -10,6 +10,7 @@
 #include "Vortex.h"
 #include "ShipIntf.h"
 #include "DestroyableIntf.h"
+#include "Explosion.h"
 
 #define RAD2DEG(x) ((x) * 57.2957795f)
 
@@ -68,6 +69,7 @@ private:
 
     //ship creation stuff
     int m_index;
+    int m_hitCount;
     static int index;
 
 
@@ -87,10 +89,13 @@ private:
 
     Vortex m_vortex;
 
+    Explosion m_explosion;
     //Container to hold the interface to pass to
     //Box2D as UserData, since it's stores it as a void
     //and will lose most of its vtable
     DestroyableIntfContainer m_destroyableContainer;
+
+    void respawn();
 };
 
 #endif //SHIP_H

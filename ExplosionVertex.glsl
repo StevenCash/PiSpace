@@ -3,6 +3,7 @@ attribute vec3 aColor;
 uniform mat4 mvpMatrix;
 uniform float uTime;
 varying vec3 vColor;
+uniform vec2 uOffset;
 void main()
 {
   vec4 position = vec4(aPosition,1.0);
@@ -13,9 +14,10 @@ void main()
   scale[1][1]=1.0+(uTime*9.0);
   scale[2][2]=1.0;
   scale[3][3]=1.0;
-
+  
   position = scale * position;
-  gl_Position = position;
+  vec4 scaledOffset = mvpMatrix * vec4(uOffset,0.0,0.0);
+  gl_Position = position + scaledOffset;
   vColor = aColor;
 }
 

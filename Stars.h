@@ -1,19 +1,19 @@
 #ifndef STARS_H
 #define STARS_H
 
-#include "GLHeader.h"
+#include <vector>
+
+class Star;
 
 class Stars
 {
 public:
-    //Constructor
-    //takes screen size to calculate the star density
-    Stars(int screenx, int screeny);
+//Constructor
+    explicit Stars();
     void Draw();
+    ~Stars();
 private:
-    GLuint m_vertexBufferHandleArray[1];    
-    static GLuint m_shaderProgram;
-
+    std::vector<Star*> m_stars;
 };
 
 #endif

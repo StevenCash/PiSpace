@@ -1,15 +1,27 @@
 #include "Stars.h"
-#include <stdlib.h>
+#include "Star.h"
 
-GLuint Stars::m_shaderProgram = 0;
-
-Stars::Stars(int screenx, int screeny)
+Stars::Stars():
 {
-    GLfloat randx = rand();
-    GLfloat randy = rand();
-
+    
 }
+
+
+
+Stars::Stars():
+{
+    for(int i=0; i< m_stars.size(); ++i)
+    {
+        delete m_stars[i];
+    }
+    
+}
+
 
 void Stars::Draw()
 {
+    for(int i=0; i< m_stars.size(); ++i)
+    {
+        m_stars[i]->Draw();
+    }
 }
