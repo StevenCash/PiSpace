@@ -12,7 +12,9 @@
 #include "DestroyableIntf.h"
 #include "Explosion.h"
 
+//changed by SC
 #define RAD2DEG(x) ((x) * 57.2957795f)
+//#define RAD2DEG(x) ((x))
 
 class Ship : public ShipIntf, public DestroyableIntf
 {

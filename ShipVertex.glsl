@@ -1,4 +1,3 @@
-#version 100
 attribute vec4 vPosition;
 attribute vec4 vColor;
 uniform mat4 mvpMatrix;

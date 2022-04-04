@@ -1,4 +1,4 @@
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "Bullet.h"
 #include "ShaderUtil.h"
 
@@ -101,7 +101,9 @@ Bullet::Bullet(b2World& world, ShipIntf *pShip, uint32 index):
         GLfloat centerx = 0.0f;
         GLfloat centery = 0.0f;
         int i=0;
-        GLfloat f[numValues];
+//changed by SC
+		//GLfloat f[numValues];
+		GLfloat f[54];
         f[0] = centerx;
         f[1] = centery;
         f[2] = 0.0f;
@@ -125,7 +127,9 @@ Bullet::Bullet(b2World& world, ShipIntf *pShip, uint32 index):
 
 
         //Setup COLOR attributes
-        GLfloat colorArray[numValues];
+//changed by SC
+		//GLfloat colorArray[numValues];
+		GLfloat colorArray[54];
 
         colorArray[0]=1.0f;
         colorArray[1]=1.0f;

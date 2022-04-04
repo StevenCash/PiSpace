@@ -1,7 +1,8 @@
 #include "Star.h"
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "ShaderUtil.h"
-#include <bits/stl_algo.h> //for_each
+//#include <bits/stl_algo.h> //for_each
+#include <algorithm>
 #include <stdlib.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -41,12 +42,16 @@ Star::Star(float minX, float maxX, float minY, float maxY):
     if(m_shaderProgram)
     {
          //Setup Position ATTRIBUTES
-
+		//Changed by SC
         GLuint numOutsideVertices=5;
         m_numVertices=numOutsideVertices+2;
         GLuint numValues=m_numVertices*3;
-        int i=0;
-        GLfloat f[numValues];
+		
+		int i=0;
+		// Changed by SC 
+		//        GLfloat f[numValues];
+		GLfloat f[21];
+
         f[0] = centerx;
         f[1] = centery;
         f[2] = 0.0f;
@@ -70,7 +75,8 @@ Star::Star(float minX, float maxX, float minY, float maxY):
 
 
         //Setup COLOR attributes
-        GLfloat colorArray[numValues];
+		//Changed by SC
+        GLfloat colorArray[21];
 
         colorArray[0]=1.0f;
         colorArray[1]=1.0f;

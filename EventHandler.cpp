@@ -8,14 +8,23 @@
 #include "TraceLogger.h"
 #include "Ships.h"
 #include "Star.h"
-#include <sys/time.h>
+//changed by SC
+#include <ctime>
+#include <WinSock2.h>
+#include <Windows.h>
+
+struct timezone 
+{
+  int  tz_minuteswest; /* minutes W of Greenwich */
+  int  tz_dsttime;     /* type of dst correction */
+};
 
 EventHandler::EventHandler(SDL_Window *pWindow, b2World& world, Ships& ships, Walls& walls):
     m_bQuit(false),
     m_pWindow(pWindow),
     m_ships(ships),
-    m_timeStep(1.0f / 60.0f),
-    m_velocityIterations(6),
+	m_timeStep(1.0f / 60.0f),
+	m_velocityIterations(6),
     m_positionIterations(2),
     m_world(world),
     m_walls(walls)
@@ -31,10 +40,15 @@ EventHandler::EventHandler(SDL_Window *pWindow, b2World& world, Ships& ships, Wa
 //Main Event Loop
 void EventHandler::EventLoop()
 {
-    struct timeval myTimeval;
-    struct timezone myTimezone;
-    gettimeofday(&myTimeval, &myTimezone);
-    srand(myTimeval.tv_usec);
+// changed by SC
+	SYSTEMTIME st, lt;
+
+	GetLocalTime(&lt);
+	//struct timeval myTimeval;
+    //struct timezone myTimezone;
+	//gettimeofday(&myTimeval, &myTimezone);
+    //srand(myTimeval.tv_usec);
+	srand(lt.wMilliseconds);
 
     Star star(-10.0f,0.0f,0.0f,10.0f); //top left
     Star star2(0.0f, 10.0f, -10.0f,0.0f); //bot right
@@ -170,7 +184,7 @@ void EventHandler::EventLoop()
         //Display the back buffer
         SDL_GL_SwapWindow(m_pWindow);
         
-        //Sleep to not eat the machine
+		//Sleep to not eat the machine
         SDL_Delay(60);
     }
 

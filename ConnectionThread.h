@@ -1,7 +1,7 @@
 #ifndef CONNECTIONTHREAD_H
 #define CONNECTIONTHREAD_H
 
-#include <SDL2/SDL_thread.h>
+#include <SDL_thread.h>
 
 class SDL_Thread;
 class Ships;

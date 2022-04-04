@@ -134,7 +134,7 @@ Ship::Ship(b2World& world):
     //These are separate from Box coordinates, but 
     //they completely line up with all of the external
     //edges
-    TempStruct shipVertices[] =
+	    TempStruct shipVertices[] =
         {
             {{ boxShipVertices[0].x,boxShipVertices[0].y, 0.0f,1.0f}, //0
              {1.0, 1.0, 1.0, 1.0}},
@@ -216,7 +216,7 @@ void Ship::Draw()
         modelMatrix = 
             glm::translate(modelMatrix, glm::vec3(position.x, position.y, 0.0f)); 
         modelMatrix = 
-            glm::rotate(modelMatrix, angleDeg , m_rotateAxis);    
+            glm::rotate(modelMatrix, glm::radians(angleDeg) , m_rotateAxis);    
 
         //skipping the view matrix, because we don't need it
         glm::mat4 mvpMat = m_projMat * modelMatrix;
@@ -328,7 +328,7 @@ void Ship::DoCommands()
         m_pBody->ApplyForceToCenter(force,true);
     }
 
-    if(m_bForceCW)
+	if(m_bForceCW)
     {
         m_pBody->ApplyTorque(-1.0f, true);
     }

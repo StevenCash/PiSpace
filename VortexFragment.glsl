@@ -1,5 +1,3 @@
-#version 100
-
 varying float vFade;
 void main()
 {

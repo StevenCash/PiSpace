@@ -1,8 +1,8 @@
 #ifndef SOUNDBANK_H
 #define SOUNDBANK_H
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_mixer.h>
+#include <SDL.h>
+#include <SDL_mixer.h>
 #include <vector>
 #include <string>
 

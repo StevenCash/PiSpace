@@ -1,7 +1,7 @@
 #ifndef EVENTHANDLER_H
 #define EVENTHANDLER_H
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <set>
 
 #include "ControllerIntf.h"

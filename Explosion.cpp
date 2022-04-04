@@ -1,7 +1,7 @@
 #include "Explosion.h"
 #include "ShaderUtil.h"
 #include <glm/gtc/type_ptr.hpp>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <list>
 #include <iostream>
 
@@ -86,8 +86,11 @@ Explosion::Explosion(int index)
             colorListFloat.push_back(iter->y);
             colorListFloat.push_back(iter->z);
         }
-        GLfloat colorArray[colorListFloat.size()];
-        int colorIndex = 0;
+
+//Changed by SC
+		//GLfloat colorArray[colorListFloat.size()];
+        GLfloat colorArray[144];
+		int colorIndex = 0;
         for(std::list<GLfloat>::const_iterator iter = colorListFloat.begin();
             iter != colorListFloat.end();
             ++iter)
@@ -161,9 +164,10 @@ Explosion::Explosion(int index)
             vertexList.push_back((*veciter).z);
         }
 
-
-        GLfloat vertices[vertexList.size()];
-        int tempIndex = 0;
+// Changed by SC
+        //GLfloat vertices[vertexList.size()];
+        GLfloat vertices[144];
+		int tempIndex = 0;
         for(std::list<GLfloat>::const_iterator iter =  vertexList.begin();
             iter != vertexList.end();
             ++iter)

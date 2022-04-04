@@ -1,7 +1,7 @@
 #include "Vortex.h"
 #include "ShaderUtil.h"
 #include <glm/gtc/type_ptr.hpp>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <iostream>
 const glm::mat4 Vortex::m_projMat(glm::ortho(-10.0f,10.0f,-10.0f,10.0f));
 

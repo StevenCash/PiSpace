@@ -98,11 +98,12 @@ GLuint createShaderProgram(const ShaderList_T &shaderList)
         GLint infoLogLength;
         glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
 
-        GLchar strInfoLog[infoLogLength + 1];
-        glGetProgramInfoLog(program, infoLogLength, NULL, strInfoLog);
+// Changed by SC
+		//GLchar strInfoLog[infoLogLength + 1];
+        //glGetProgramInfoLog(program, infoLogLength, NULL, strInfoLog);
         std::cerr 
             << "Linker failure:" 
-            << strInfoLog
+            //<< strInfoLog
             << std::endl;
 
     }

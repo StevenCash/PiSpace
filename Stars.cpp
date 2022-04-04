@@ -1,14 +1,14 @@
 #include "Stars.h"
 #include "Star.h"
 
-Stars::Stars():
-{
-    
-}
+//Stars::Stars()
+//{
+//    
+//}
 
 
 
-Stars::Stars():
+Stars::Stars()
 {
     for(int i=0; i< m_stars.size(); ++i)
     {
